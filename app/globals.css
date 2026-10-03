@@ -1,0 +1,27 @@
+html, body { margin: 0; height: 100%; background: #f3f2ec; color: #1d2620; -webkit-font-smoothing: antialiased; overflow: hidden; }
+a { color: #2f6b4f; text-decoration: none; }
+a:hover { color: #1f4b37; }
+button { font: inherit; color: inherit; }
+
+/* Hover states (inline styles set the base look, so these need !important). */
+.hov-nav:hover { background: #efeee7 !important; }
+.hov-primary:hover { background: #275c43 !important; }
+.hov-tour:hover { color: #1d2620 !important; }
+.hov-grove:hover { background: rgba(255, 255, 255, 0.4) !important; }
+.hov-crumb:hover { color: #1d2620 !important; }
+.hov-contra:hover { background: #f7e6dd !important; }
+.hov-zoom:hover { background: #f1f0ea !important; }
+.hov-plant:hover { background: #f6eed3 !important; }
+.hov-pick:hover { border-color: #4f9d69 !important; }
+.hov-close:hover { background: #f4f3ee !important; }
+
+@keyframes ff0 { 0%, 100% { transform: translate(0, 0); opacity: 0 } 20% { opacity: .8 } 50% { transform: translate(30px, -40px); opacity: .3 } 80% { opacity: .7 } }
+@keyframes ff1 { 0%, 100% { transform: translate(0, 0); opacity: .1 } 30% { opacity: .8 } 60% { transform: translate(-36px, -18px); opacity: .2 } 85% { opacity: .6 } }
+@keyframes ff2 { 0%, 100% { transform: translate(0, 0); opacity: 0 } 40% { transform: translate(16px, 26px); opacity: .8 } 70% { opacity: .15 } }
+@keyframes mist { from { transform: translateX(-5%) } to { transform: translateX(5%) } }
+@keyframes dashFlow { to { stroke-dashoffset: -250 } }
+@keyframes pulseRing { 0% { transform: scale(.7); opacity: .95 } 100% { transform: scale(2); opacity: 0 } }
+@keyframes orbBreathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.07) } }
+@keyframes orbSpin { to { transform: rotate(360deg) } }
+@keyframes sway { 0%, 100% { transform: rotate(-2deg) } 50% { transform: rotate(2.5deg) } }
+@keyframes wave { 0%, 100% { transform: scaleY(.25) } 50% { transform: scaleY(1) } }
