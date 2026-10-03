@@ -5,6 +5,8 @@ import { AV, C, GROVE, LEAVES, MOVE_AT, PEOPLE, SCRIPT, SEEDS, type Leaf } from 
 import { MorningBriefing, TalkButton, type BriefingItem } from './briefing';
 import { CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
 import { selData } from './selection';
+import { MoodCard } from './mood/MoodCard';
+import MoodMirror from './mood/MoodMirror';
 import { CanvasBg, GroveTree, Orb, ProjectTree, Wave } from './trees';
 
 const serif = "'Instrument Serif', serif";
@@ -16,7 +18,7 @@ export interface CanopyAppProps {
   showTour?: boolean;
 }
 
-type Screen = 'grove' | 'tree';
+type Screen = 'grove' | 'tree' | 'mood';
 
 // The security review leaf changes once the voice agent has moved it.
 const withVoiceEdits = (l: Leaf, secMoved: boolean): Leaf =>
@@ -97,6 +99,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
     if (l.state !== 'd') cnt[l.state]++;
   });
   const isTree = screen === 'tree';
+  const isMood = screen === 'mood';
   const selected = isTree ? selData(leaves, sel, secMoved) : null;
   const orphanCount = SEEDS.filter((x) => !planted[x.id]).length;
   const mid = vw >= 1180, wide = vw >= 1320;
@@ -111,19 +114,22 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
 
   const goTree = () => { stopTimer(); setScreen('tree'); setSel(null); setVoice(false); };
   const goGrove = () => { stopTimer(); setScreen('grove'); setSel(null); setVoice(false); };
-  const openLeaf = (id: string) => () => { stopTimer(); setScreen('tree'); setSel(id); setVoice(false); };
-  const tourIdx = voice ? 3 : !isTree ? 0 : sel ? 2 : 1;
+  const goMood = () => { stopTimer(); setScreen('mood'); setSel(null); setVoice(false); };
+  const openCommitment = (id: string) => { stopTimer(); setScreen('tree'); setSel(id); setVoice(false); };
+  const openLeaf = (id: string) => () => openCommitment(id);
+  const tourIdx = isMood ? 4 : voice ? 3 : !isTree ? 0 : sel ? 2 : 1;
   const sec = leaves.find((l) => l.id === 'sec')!;
 
   const nav: [string, string, (() => void) | undefined, boolean][] = [
-    ['The Grove', '42', goGrove, !isTree],
+    ['The Grove', '42', goGrove, screen === 'grove'],
     ['My commitments', '6', openLeaf('budget'), false],
     ['Meetings', '14', undefined, false],
+    ['Mood Mirror', '1', goMood, isMood],
     ['People', '24', undefined, false],
     ['Sources', '3', undefined, false],
     ['Settings', '', undefined, false],
   ];
-  const tour: [string, () => void][] = [['01 Grove', goGrove], ['02 Tree view', goTree], ['03 Commitment', openLeaf('quote')], ['04 Voice', openVoice]];
+  const tour: [string, () => void][] = [['01 Grove', goGrove], ['02 Tree view', goTree], ['03 Commitment', openLeaf('quote')], ['04 Voice', openVoice], ['05 Mood Mirror', goMood]];
   const secLine = sec.state === 'a' ? 'Security review moved to Thursday' : 'Security review is due tomorrow';
   const seedLine = orphanCount === 0 ? 'Every decision has an owner' : `${orphanCount} decision${orphanCount === 1 ? '' : 's'} still need${orphanCount === 1 ? 's' : ''} an owner`;
   const briefingItems: BriefingItem[] = [
@@ -147,7 +153,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
     return { name: p[0], init: p[1], bg: AV[i], ratio: p[2] + '/' + p[3], pct: Math.round(ratio * 100) + '%', bar: ratio >= 0.8 ? '#4f9d69' : ratio >= 0.6 ? '#9cbf5a' : '#e3a33b' };
   });
 
-  const railShow = vw >= 1000 || !!selected;
+  const railShow = !isMood && (vw >= 1000 || !!selected);
   const headerStat = (n: number | string, color: string) => <span style={{ fontFamily: serif, fontSize: 24, color }}>{n}</span>;
   const statLabel = (s: string) => <span style={{ fontSize: 12.5, color: '#7a857e' }}>{s}</span>;
   const plainBtn = { display: 'flex', alignItems: 'baseline', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' } as const;
@@ -238,7 +244,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
           </div>
         </header>
 
-        {!isTree && (
+        {screen === 'grove' && (
           <div data-screen-label="01 The Grove" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '4px 24px 20px', gap: 16 }}>
             <div>
               <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8a948d' }}>The Grove · Monday, October 5</div>
@@ -280,6 +286,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
             </div>
           </div>
         )}
+
+        {isMood && <MoodMirror motes={motes} onBack={goGrove} onOpenCommitment={openCommitment} />}
 
         {isTree && (
           <div data-screen-label="02 Tree view" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '0 24px 20px' }}>
@@ -392,6 +400,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
           ) : (
             <>
               <MorningBriefing dateLabel="Mon Oct 5" items={briefingItems} script={briefingScript} />
+              <MoodCard onOpen={goMood} />
               <UnownedDecisions planted={planted} picking={picking} orphanCount={orphanCount} onPlant={setPicking}
                 onPick={(id, name) => { setPlanted((p) => ({ ...p, [id]: name })); setPicking(null); }} />
               <FollowThrough people={people} />

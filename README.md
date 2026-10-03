@@ -88,6 +88,35 @@ A "yes" in a meeting is not always real agreement. If someone sounded anxious or
 }
 ```
 
+## Running it
+
+```bash
+npm install && npm run dev          # the Canopy app on http://localhost:3000
+```
+
+Open **Mood Mirror** from the left sidebar (or the card on the Grove). The demo meetings and
+transcript uploads work with no keys and nothing else running.
+
+For recordings, the opt-in face layer, and the spoken per-person recap, also start the Python
+service that backs them:
+
+```bash
+cd mood-mirror && pip install -r requirements.txt && uvicorn app:app --port 8000
+```
+
+The app finds it at `MOOD_MIRROR_URL` (default `http://127.0.0.1:8000`). Copy `.env.example` to
+`.env.local` for the Azure OpenAI and ElevenLabs keys; without them Mood Mirror labels tone with an
+offline lexicon and the briefing falls back to the browser's own voice.
+
+| Where | What it does |
+| --- | --- |
+| `components/canopy/mood/MoodMirror.tsx` | The Mood Mirror screen, in Canopy's design language |
+| `components/canopy/mood/engine.ts` | The analysis in TypeScript, so transcripts work with no Python |
+| `components/canopy/mood/FaceLayer.tsx` | The opt-in face layer: consent, upload, mismatches |
+| `components/canopy/mood/MoodBrief.tsx` | The spoken recap of your own report |
+| `app/api/mood/*` | Demo, upload, face, brief and status; each prefers the Python service |
+| `mood-mirror/` | The Python service: Scribe/Azure Speech, the face model, ElevenLabs voice |
+
 ## Tech stack
 
 | Layer | Tool | Role |

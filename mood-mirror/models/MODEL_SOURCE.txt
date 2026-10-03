@@ -1,0 +1,7 @@
+fer_emotion_quantized.tflite
+
+Mini-Xception facial expression classifier (7 classes: angry, disgust, fear, happy, sad,
+surprise, neutral), trained on FER-2013. Copied unchanged from the `fer` Python package
+(fer/data/emotion_model_quantized.tflite, version 25.10.3), MIT License,
+Copyright (c) 2018 Justin Shenk. Original architecture: Octavio Arriaga et al.,
+"Real-time Convolutional Neural Networks for Emotion and Gender Classification" (2017).
