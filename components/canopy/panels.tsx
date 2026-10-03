@@ -2,46 +2,13 @@
 
 import { initials, SEEDS } from './data';
 import type { SelData } from './selection';
-import { Orb } from './trees';
 
 const serif = "'Instrument Serif', serif";
 const mono = "'Geist Mono', monospace";
 const card = { background: '#fff', border: '1px solid #e4e2d9', borderRadius: 16 } as const;
 const cardTitle = { fontFamily: serif, fontSize: 23, color: '#16211b' } as const;
 
-export interface OweItem { title: string; sub: string; color: string; textColor: string; go: () => void }
 export interface Person { name: string; init: string; bg: string; ratio: string; pct: string; bar: string }
-
-export function AskCanopy({ owe, openVoice }: { owe: OweItem[]; openVoice: () => void }) {
-  return (
-    <section style={{ ...card, padding: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={cardTitle}>Ask Canopy</span>
-        <span style={{ fontFamily: mono, fontSize: 10.5, color: '#7a857e', border: '1px solid #e4e2d9', borderRadius: 5, padding: '1px 6px' }}>V</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, padding: 14, borderRadius: 13, background: 'linear-gradient(135deg, #eaf5ef, #f4f6ec)' }}>
-        <Orb state="idle" size={46} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, lineHeight: 1.4, color: '#1d2620' }}>You owe Priya two things. One is overdue.</div>
-          <button className="hov-primary" onClick={openVoice} style={{ marginTop: 8, height: 30, padding: '0 12px', borderRadius: 15, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 12.5, cursor: 'pointer' }}>
-            Talk to Canopy
-          </button>
-        </div>
-      </div>
-      <div style={{ fontSize: 12.5, fontWeight: 500, color: '#3a453e', margin: '16px 0 4px' }}>What you owe this week</div>
-      {owe.map((o) => (
-        <button key={o.title} onClick={o.go} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', border: 'none', borderTop: '1px solid #efeee7', background: 'none', cursor: 'pointer', textAlign: 'left' }}>
-          <span style={{ width: 14, height: 8, borderRadius: '0 100% 0 100%', flex: 'none', background: o.color, transition: 'background 1.6s' }} />
-          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 13.5, color: '#1d2620' }}>{o.title}</span>
-            <span style={{ fontSize: 11.5, color: o.textColor }}>{o.sub}</span>
-          </span>
-          <span style={{ color: '#b3b9b4' }}>›</span>
-        </button>
-      ))}
-    </section>
-  );
-}
 
 export function UnownedDecisions({ planted, picking, orphanCount, onPlant, onPick }: {
   planted: Record<string, string>;

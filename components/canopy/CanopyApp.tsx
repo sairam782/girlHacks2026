@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AV, C, CT, GROVE, LEAVES, MOVE_AT, PEOPLE, SCRIPT, SEEDS, type Leaf } from './data';
-import { AskCanopy, CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
+import { AV, C, GROVE, LEAVES, MOVE_AT, PEOPLE, SCRIPT, SEEDS, type Leaf } from './data';
+import { MorningBriefing, TalkButton, type BriefingItem } from './briefing';
+import { CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
 import { selData } from './selection';
 import { CanvasBg, GroveTree, Orb, ProjectTree, Wave } from './trees';
 
@@ -123,10 +124,24 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
     ['Settings', '', undefined, false],
   ];
   const tour: [string, () => void][] = [['01 Grove', goGrove], ['02 Tree view', goTree], ['03 Commitment', openLeaf('quote')], ['04 Voice', openVoice]];
-  const owe = [
-    { title: 'Budget sign-off', sub: '3 days overdue · Q4 Vendor Migration', color: C.r, textColor: CT.r, go: openLeaf('budget') },
-    { title: 'Security review of Vendor A', sub: sec.state === 'a' ? 'Moved to Thu Oct 8 · slip noted' : 'Due tomorrow · Q4 Vendor Migration', color: C[sec.state], textColor: CT[sec.state], go: openLeaf('sec') },
+  const secLine = sec.state === 'a' ? 'Security review moved to Thursday' : 'Security review is due tomorrow';
+  const seedLine = orphanCount === 0 ? 'Every decision has an owner' : `${orphanCount} decision${orphanCount === 1 ? '' : 's'} still need${orphanCount === 1 ? 's' : ''} an owner`;
+  const briefingItems: BriefingItem[] = [
+    { text: 'Budget sign-off is 3 days overdue', kind: 'overdue' },
+    { text: secLine, kind: 'soon' },
+    { text: seedLine, kind: 'seed' },
   ];
+  const briefingScript = [
+    'Good morning, Jordan. Here is your briefing for Monday, October 5th.',
+    'First, what is overdue: your budget sign-off for Priya is three days late, and Lena followed up this morning.',
+    sec.state === 'a'
+      ? 'Your security review of Vendor A has moved to Thursday, and Priya has been told.'
+      : 'Due tomorrow: the security review of Vendor A, also for Priya.',
+    orphanCount > 0
+      ? `This week, ${orphanCount === 1 ? 'one decision still needs' : `${orphanCount} decisions still need`} an owner, so take a minute to plant ${orphanCount === 1 ? 'it' : 'them'}.`
+      : 'Every decision from this week has an owner.',
+    'If you only do one thing today, sign off on the budget.',
+  ].join(' ');
   const people = PEOPLE.map((p, i) => {
     const ratio = p[2] / p[3];
     return { name: p[0], init: p[1], bg: AV[i], ratio: p[2] + '/' + p[3], pct: Math.round(ratio * 100) + '%', bar: ratio >= 0.8 ? '#4f9d69' : ratio >= 0.6 ? '#9cbf5a' : '#e3a33b' };
@@ -371,12 +386,12 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
       </div>
 
       {railShow && (
-        <aside style={{ width: vw >= 1320 ? 372 : 330, flex: 'none', display: 'flex', flexDirection: 'column', gap: 12, padding: '14px 16px 16px 0', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
+        <aside style={{ width: vw >= 1320 ? 372 : 330, flex: 'none', display: 'flex', flexDirection: 'column', gap: 12, padding: selected ? '14px 16px 16px 0' : '14px 16px 104px 0', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
           {selected ? (
             <CommitmentPanel sel={selected} nudged={!!nudged[selected.id]} onClose={() => setSel(null)} onNudge={() => setNudged((n) => ({ ...n, [selected.id]: true }))} />
           ) : (
             <>
-              <AskCanopy owe={owe} openVoice={openVoice} />
+              <MorningBriefing dateLabel="Mon Oct 5" items={briefingItems} script={briefingScript} />
               <UnownedDecisions planted={planted} picking={picking} orphanCount={orphanCount} onPlant={setPicking}
                 onPick={(id, name) => { setPlanted((p) => ({ ...p, [id]: name })); setPicking(null); }} />
               <FollowThrough people={people} />
@@ -384,6 +399,9 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk', showTo
           )}
         </aside>
       )}
+
+      {/* Hidden while the voice panel is open, and while a commitment is open so it doesn't cover the panel's action buttons. */}
+      {!voice && !selected && <TalkButton onClick={openVoice} />}
     </div>
   );
 }
