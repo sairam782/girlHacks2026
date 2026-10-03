@@ -1,1 +1,1 @@
-# girlHasks2026
+# GirlHacks2026
