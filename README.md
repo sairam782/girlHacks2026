@@ -176,6 +176,18 @@ Target length is about 150 words, which reads out in roughly 60 seconds. Generat
 - Team-level health score across projects
 - Voice reply to mark an item done or push a date
 
+## Running it
+
+```
+npm install
+cp .env.example .env.local   # add keys; every one is optional
+npm run dev
+```
+
+Data lives in `.data/` (git-ignored). Without keys, extraction uses built-in rules, the briefing uses the browser voice, and history reads from the local file. Set `DATABASE_URL` and every commitment event is also written to a Tiger Data hypertable.
+
+Status: ingestion, extraction, tree, voice briefing, history, and manual edit are built. Mood Mirror is not.
+
 ## Team
 
 Built at NJIT GirlHacks 2026, Oct 3 to 4.

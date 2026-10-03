@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useMemo, type ReactNode } from 'react';
-import { BARK, C, CT, FALLEN, LIMBS, initials, type Leaf, type LeafState, type LabelPos, type GroveProject } from './data';
+import { BARK, C, CT, LIMBS, WS_LABEL, initials, type FallenLeaf, type Leaf, type LeafState, type LabelPos, type GroveProject } from './data';
 import { bz, bzd, f1, leafD, leafTop, place, rng, taper, tint, type Curve, type Placement } from './geometry';
 
 const shadowFilter = (id: string, sd: number, op: number) => (
@@ -128,7 +128,7 @@ export const GroveTree = memo(function GroveTree({ gd, cnt }: { gd: GroveProject
   const B = 448, cx = 220;
   const L = `M${cx} ${B + 4} C ${cx - 70} ${B + 26}, ${cx - 180} ${B + 34}, ${cx - 340} ${B + 26}`;
   const R = `M${cx} ${B + 4} C ${cx + 70} ${B + 26}, ${cx + 180} ${B + 34}, ${cx + 340} ${B + 26}`;
-  const roots = gd.id === 'q4' ? [L, R] : gd.id === 'onb' ? [R] : [L];
+  const roots = gd.slot === 1 ? [L, R] : gd.slot === 0 ? [R] : [L];
   return (
     <svg viewBox="0 0 440 480" preserveAspectRatio="xMidYMax meet" style={{ width: '100%', height: '100%', overflow: 'visible', display: 'block' }}>
       {genericTree({ cx, base: B, h: gd.h, seed: gd.seed, data, foliage: gd.foliage, fallen: cnt.f, pre: 'gv' + gd.id, roots })}
@@ -161,17 +161,18 @@ function labelCard(key: string, p: { x: number; yTop: number; anchor: string }, 
 
 export interface ProjectTreeProps {
   leaves: Leaf[];
+  fallen: FallenLeaf[];
+  branches: { name: string; count: number; atRisk: number }[];
+  highlight: Set<string>; // leaves the briefing is currently talking about
   sel: string | null;
   hover: string | null;
-  secMoved: boolean;
-  phase: 0 | 1 | 2; // voice demo: 0 idle, 1 highlighting what you owe, 2 security review moved
   mode: 'at-risk' | 'all' | 'none';
   onSelect: (id: string) => void;
   onHover: (id: string | null) => void;
 }
 
-// The detailed Q4 Vendor Migration tree: three workstream branches, one leaf per commitment.
-export function ProjectTree({ leaves, sel, hover, secMoved, phase, mode, onSelect, onHover }: ProjectTreeProps) {
+// The detailed project tree: three workstream branches, one leaf per commitment.
+export function ProjectTree({ leaves, fallen, branches, highlight, sel, hover, mode, onSelect, onHover }: ProjectTreeProps) {
   return useMemo(() => {
     const r = rng(42);
     const back: ReactNode[] = [], wood: string[] = [], twigs: ReactNode[] = [], lf: ReactNode[] = [], rings: ReactNode[] = [], labels: ReactNode[] = [];
@@ -181,10 +182,6 @@ export function ProjectTree({ leaves, sel, hover, secMoved, phase, mode, onSelec
     back.push(<rect key="hit" x={-600} y={-200} width={2600} height={1300} fill="transparent" />);
     back.push(<g key="gl" opacity={0.4}>{genericTree({ cx: 60, base: 814, h: 240, seed: 11, data: Array(12).fill(C.g), foliage: 70, fallen: 0, pre: 'gl' })}</g>);
     back.push(<g key="gr" opacity={0.4}>{genericTree({ cx: 1340, base: 814, h: 225, seed: 23, data: [C.g, C.g, C.a, C.g, C.g, C.r, C.g, C.g, C.g, C.g, C.g, C.g], foliage: 45, fallen: 1, pre: 'gr' })}</g>);
-    ([[180, 700, 'start', '← ONBOARDING REVAMP', 'waits on Legacy data export'], [1220, 700, 'end', 'PAYROLL API LAUNCH →', 'needs the SSO integration spike']] as const).forEach((g, i) => {
-      back.push(<text key={'gt' + i} x={g[0]} y={g[1]} textAnchor={g[2]} style={{ ...mono, fontSize: 12.5, fill: '#22796c', ...halo }}>{g[3]}</text>);
-      back.push(<text key={'gs' + i} x={g[0]} y={g[1] + 19} textAnchor={g[2]} style={{ fontFamily: 'Geist, sans-serif', fontSize: 14, fill: '#5d6b63', ...halo }}>{g[4]}</text>);
-    });
     const roots = ['M700 792 C 620 822, 520 846, 380 848 S 140 836, 60 814', 'M700 792 C 790 822, 900 846, 1040 846 S 1260 834, 1340 814', 'M690 798 C 650 840, 600 868, 520 892', 'M712 798 C 760 846, 830 872, 910 890'];
     back.push(<ellipse key="gnd" cx={700} cy={808} rx={560} ry={60} fill="url(#gnd)" />);
     roots.forEach((d, i) => {
@@ -204,7 +201,7 @@ export function ProjectTree({ leaves, sel, hover, secMoved, phase, mode, onSelec
       }
     });
 
-    FALLEN.forEach((f) => {
+    fallen.forEach((f) => {
       const on = sel === f.id || hover === f.id;
       lf.push(
         <g key={f.id} transform={`translate(${f.x},${f.y}) rotate(${f.rot})`} style={{ cursor: 'pointer' }}
@@ -214,20 +211,21 @@ export function ProjectTree({ leaves, sel, hover, secMoved, phase, mode, onSelec
           <path d="M2 0 Q17 1 31 0" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth={1} />
         </g>,
       );
-      if (on) labels.push(labelCard('fl' + f.id, { x: f.x + 18, yTop: f.y + 22, anchor: 'middle' }, f.title, 'DROPPED · ' + f.owner.toUpperCase(), 'd', initials(f.owner)));
+      if (on) labels.push(labelCard('fl' + f.id, { x: f.x + 18, yTop: f.y + 22, anchor: 'middle' }, f.title.length > 30 ? f.title.slice(0, 29) + '…' : f.title, 'FALLEN · ' + f.owner.toUpperCase(), 'd', initials(f.owner)));
     });
-    if (!FALLEN.some((f) => f.id === hover || f.id === sel)) {
-      labels.push(<text key="fallcap" x={930} y={792} textAnchor="start" style={{ ...mono, fontSize: 12, fill: '#8a7558', ...halo }}>3 DROPPED · STILL TRACKED</text>);
+    if (fallen.length && !fallen.some((f) => f.id === hover || f.id === sel)) {
+      labels.push(<text key="fallcap" x={520} y={790} textAnchor="start" style={{ ...mono, fontSize: 12, fill: '#8a7558', ...halo }}>{fallen.length} FALLEN · STILL TRACKED</text>);
     }
-    ([[600, 626, 'middle', 'LEGAL', '5 leaves · 2 at risk'], [676, 486, 'end', 'ENGINEERING', '6 leaves · ' + (secMoved ? 2 : 1) + ' at risk'], [818, 608, 'middle', 'FINANCE', '5 leaves · 1 at risk']] as const).forEach((w, i) => {
-      labels.push(<text key={'ws' + i} x={w[0]} y={w[1]} textAnchor={w[2]} style={{ ...mono, fontSize: 12.5, fontWeight: 500, fill: '#4a5a50', ...halo }}>{w[3]}</text>);
-      labels.push(<text key={'wc' + i} x={w[0]} y={w[1] + 17} textAnchor={w[2]} style={{ fontFamily: 'Geist, sans-serif', fontSize: 13, fill: '#7a857e', ...halo }}>{w[4]}</text>);
+    branches.forEach((w, i) => {
+      const [x, y, anchor] = WS_LABEL[i];
+      labels.push(<text key={'ws' + i} x={x} y={y} textAnchor={anchor} style={{ ...mono, fontSize: 12.5, fontWeight: 500, fill: '#4a5a50', ...halo }}>{w.name.toUpperCase()}</text>);
+      labels.push(<text key={'wc' + i} x={x} y={y + 17} textAnchor={anchor} style={{ fontFamily: 'Geist, sans-serif', fontSize: 13, fill: '#7a857e', ...halo }}>{w.count} leaves · {w.atRisk} at risk</text>);
     });
 
     leaves.forEach((l) => {
-      const limb = LIMBS[l.limb], L = l.L || 42, q = place(limb.c, l.t, l.side || 0, 24), col = C[l.state];
+      const limb = LIMBS[l.limb], L = 42, q = place(limb.c, l.t, l.side || 0, 24), col = C[l.state];
       if (!q.tip) twigs.push(<path key={'t' + l.id} d={`M${f1(q.px)} ${f1(q.py)}Q${f1(q.qx!)} ${f1(q.qy!)} ${f1(q.x)} ${f1(q.y)}`} fill="none" stroke="#7a5a3f" strokeWidth={2.4} strokeLinecap="round" />);
-      const isSel = sel === l.id, isHov = hover === l.id, hl = phase === 1 && (l.id === 'sec' || l.id === 'budget'), moved = phase === 2 && l.id === 'sec';
+      const isSel = sel === l.id, isHov = hover === l.id, hl = highlight.has(l.id);
       const asym = (r() - 0.5) * 0.3, W = L * 0.37, a = (q.ang * Math.PI) / 180, mx = q.x + Math.cos(a) * L * 0.5, my = q.y + Math.sin(a) * L * 0.5;
       const swayDur = f1(4.5 + r() * 3), swayDelay = f1(-r() * 5);
       lf.push(
@@ -243,13 +241,12 @@ export function ProjectTree({ leaves, sel, hover, secMoved, phase, mode, onSelec
           </g>
         </g>,
       );
-      if (l.dep) rings.push(<circle key={'dp' + l.id} cx={f1(q.px)} cy={f1(q.py)} r={4.5} fill={C.root} stroke="#fff" strokeWidth={1.5} />);
-      if (isSel) rings.push(<circle key={'sr' + l.id} cx={f1(mx)} cy={f1(my)} r={L * 0.8} fill="none" stroke="#2b3630" strokeWidth={1.3} strokeDasharray="3 5" />);
-      if (hl || moved) rings.push(<circle key={'pr' + l.id + phase} cx={f1(mx)} cy={f1(my)} r={L * 0.6} fill="none" stroke={moved ? C.a : '#2f8a77'} strokeWidth={2} style={{ transformBox: 'fill-box', transformOrigin: 'center', animation: `pulseRing ${moved ? 1.6 : 1.3}s ease-out infinite` }} />);
-      const show = mode === 'all' || isSel || isHov || hl || moved || (mode === 'at-risk' && l.state !== 'g');
+            if (isSel) rings.push(<circle key={'sr' + l.id} cx={f1(mx)} cy={f1(my)} r={L * 0.8} fill="none" stroke="#2b3630" strokeWidth={1.3} strokeDasharray="3 5" />);
+      if (hl) rings.push(<circle key={'pr' + l.id} cx={f1(mx)} cy={f1(my)} r={L * 0.6} fill="none" stroke="#2f8a77" strokeWidth={2} style={{ transformBox: 'fill-box', transformOrigin: 'center', animation: 'pulseRing 1.3s ease-out infinite' }} />);
+      const show = mode === 'all' || isSel || isHov || hl || (mode === 'at-risk' && l.state !== 'g');
       if (show) {
-        const sub = moved ? 'MOVED → THU OCT 8 · SLIP NOTED' : `${l.state === 'g' ? 'ON TRACK' : (l.stateLabel || '').toUpperCase()} · ${l.risk}% RISK`;
-        labels.push(labelCard('lb' + l.id, labelPos(q, L, l.lp), l.title, sub, l.state, initials(l.owner)));
+        const sub = `${l.stateLabel.toUpperCase()} · ${l.due.toUpperCase()}`;
+        labels.push(labelCard('lb' + l.id, labelPos(q, L, l.lp), l.title.length > 30 ? l.title.slice(0, 29) + '…' : l.title, sub, l.state, initials(l.owner)));
       }
     });
 
@@ -273,7 +270,7 @@ export function ProjectTree({ leaves, sel, hover, secMoved, phase, mode, onSelec
         {labels}
       </svg>
     );
-  }, [leaves, sel, hover, secMoved, phase, mode, onSelect, onHover]);
+  }, [leaves, fallen, branches, highlight, sel, hover, mode, onSelect, onHover]);
 }
 
 export function Orb({ state, size }: { state: 'idle' | 'listening' | 'speaking' | 'done'; size: number }) {
