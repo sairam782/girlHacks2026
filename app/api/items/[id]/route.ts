@@ -11,6 +11,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (b.deadline === null || b.deadline === '') p.deadline = null;
   else if (b.deadline !== undefined) { if (!isDate(b.deadline)) return NextResponse.json({ error: 'Bad date' }, { status: 400 }); p.deadline = b.deadline; }
   if (typeof b.done === 'boolean') p.done = b.done;
+  if (b.nudge === true) p.nudge = true;
   if (b.type === 'action') p.type = 'action';
   try { return NextResponse.json(await patchItem(id, p)); }
   catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 404 }); }

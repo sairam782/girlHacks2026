@@ -119,6 +119,7 @@ const STEP: Record<EventType, { label: (o: string | null, n: string | null) => s
   overdue: { label: () => 'Overdue', color: C.r },
   done: { label: () => 'Done', color: C.g },
   reopened: { label: () => 'Reopened', color: C.a },
+  nudged: { label: (_o, n) => (n ? `Nudged ${n.split(' ')[0]}` : 'Nudged'), color: '#2f8a77' },
 };
 
 export function CommitmentPanel({ v, source, people, onClose, onPatch }: {
@@ -139,6 +140,14 @@ export function CommitmentPanel({ v, source, people, onClose, onPatch }: {
     setEditing(false);
   };
   const steps = v.events.filter((e) => e.event_type in STEP).slice(-5);
+  const lastNudge = [...v.events].reverse().find((e) => e.event_type === 'nudged');
+  const canNudge = !done && !!v.owner;
+
+  const nudge = async () => {
+    setBusy(true);
+    await onPatch(v.it.id, { nudge: true });
+    setBusy(false);
+  };
 
   return (
     <section data-screen-label="03 Commitment panel" style={{ ...card, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto', overflowX: 'hidden' }}>
@@ -243,9 +252,14 @@ export function CommitmentPanel({ v, source, people, onClose, onPatch }: {
 
       {!editing && (
         <div style={{ position: 'sticky', bottom: 0, display: 'flex', flexWrap: 'wrap', gap: 8, padding: '12px 20px', borderTop: '1px solid #efeee7', background: '#fff' }}>
-          <button className="hov-primary" onClick={() => onPatch(v.it.id, { done: !done })} style={{ flex: '1 1 120px', minWidth: 0, height: 38, padding: '0 12px', borderRadius: 10, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          <button className="hov-primary" onClick={() => onPatch(v.it.id, { done: !done })} style={{ flex: '1 1 110px', minWidth: 0, height: 38, padding: '0 12px', borderRadius: 10, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer', whiteSpace: 'nowrap' }}>
             {done ? 'Reopen' : 'Mark done'}
           </button>
+          {canNudge && (
+            <button onClick={nudge} disabled={busy} style={{ ...secondaryBtn, flex: '1 1 110px', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', opacity: busy ? 0.6 : 1 }}>
+              {lastNudge ? `Nudged ${v.owner!.split(' ')[0]} ✓` : `Nudge ${v.owner!.split(' ')[0]}`}
+            </button>
+          )}
           <button style={secondaryBtn} onClick={() => { setText(v.it.text); setOwner(v.owner || ''); setDeadline(v.it.deadline || ''); setEditing(true); }}>Edit owner / date</button>
         </div>
       )}

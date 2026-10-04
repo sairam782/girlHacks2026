@@ -138,8 +138,8 @@ export function SourcesView({ sources, items }: { sources: Source[]; items: VIte
   );
 }
 
-const EV_LABEL: Record<EventType, string> = { created: 'created', reassigned: 'reassigned', deadline_moved: 'deadline moved', edited: 'edited', done: 'marked done', reopened: 'reopened', overdue: 'went overdue' };
-const EV_COLOR: Record<EventType, string> = { created: C.root, reassigned: '#6b8fb5', deadline_moved: C.a, edited: '#8a948d', done: C.g, reopened: C.a, overdue: C.r };
+const EV_LABEL: Record<EventType, string> = { created: 'created', reassigned: 'reassigned', deadline_moved: 'deadline moved', edited: 'edited', done: 'marked done', reopened: 'reopened', overdue: 'went overdue', nudged: 'owner nudged' };
+const EV_COLOR: Record<EventType, string> = { created: C.root, reassigned: '#6b8fb5', deadline_moved: C.a, edited: '#8a948d', done: C.g, reopened: C.a, overdue: C.r, nudged: '#2f8a77' };
 
 function describe(e: CommitmentEvent) {
   const d = (x: string | null) => (x ? fmtShort(x) : 'no date');

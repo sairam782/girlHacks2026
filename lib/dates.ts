@@ -53,6 +53,18 @@ export function resolveRelative(text: string, meeting: string): string | null {
     const [y, m] = meeting.split('-').map(Number);
     return fromUTC(Date.UTC(y, m, 0));
   }
+  // "by the 14th", "Monday the 12th" — the next time that day of the month comes round.
+  // Checked before the weekday rule so "Monday the 12th" resolves to the 12th, not to Monday.
+  const dom = t.match(/\bthe (\d{1,2})(?:st|nd|rd|th)\b/);
+  if (dom) {
+    const day = Number(dom[1]);
+    const [y, m] = meeting.split('-').map(Number);
+    if (day >= 1 && day <= 31) {
+      let cand = fromUTC(Date.UTC(y, m - 1, day));
+      if (diffDays(meeting, cand) < 0) cand = fromUTC(Date.UTC(y, m, day));
+      return cand;
+    }
+  }
   const wd = t.match(new RegExp(`\\b(next |this )?(${WEEKDAYS.join('|')})\\b`));
   if (wd) {
     const idx = WEEKDAYS.indexOf(wd[2]);

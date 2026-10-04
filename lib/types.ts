@@ -1,5 +1,5 @@
 // Data model from the README: Project, Person, ActionItem, CommitmentEvent (plus Source for ingested text).
-export type EventType = 'created' | 'reassigned' | 'deadline_moved' | 'edited' | 'done' | 'reopened' | 'overdue';
+export type EventType = 'created' | 'reassigned' | 'deadline_moved' | 'edited' | 'done' | 'reopened' | 'overdue' | 'nudged';
 export type SourceKind = 'mtg' | 'chat' | 'doc';
 
 export interface Project { id: string; name: string; created_at: string }

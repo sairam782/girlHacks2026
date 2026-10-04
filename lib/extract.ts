@@ -37,6 +37,24 @@ TEXT:
 ${text}
 """`;
 
+// Trailing date phrases, stripped from an item's wording once the deadline has been read off it.
+const DATEY = `(?:next |this )?(?:the\\s+)?(?:\\d{1,2}(?:st|nd|rd|th)|monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today|eod|eow|end of (?:the )?(?:day|week|month)|next week|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\\w*`;
+
+// Without Gemini there is nothing to group leaves by, so every item would land on a branch named
+// after the meeting. These keywords recover the usual workstreams; anything unmatched falls back
+// to the source title, same as before.
+const TOPICS: [string, RegExp][] = [
+  ['Legal', /\b(legal|msa|nda|contract|addendum|dpa|compliance|redline|terms|agreement|counsel|clause|sign-?off on the contract)\b/i],
+  ['Finance', /\b(budget|cost|invoice|po\b|purchase order|pricing|price|forecast|spend|payment|discount|renewal|quote|billing)\b/i],
+  ['Engineering', /\b(api|deploy|endpoint|sandbox|migrat\w+|export|webhook|sso|integration|runbook|cutover|staging|release|code|bug|server|database|schema|load test|pen-?test)\b/i],
+  ['Design', /\b(design|copy|onboarding|ux|ui|mockup|wireframe|empty state|screen)\b/i],
+  ['Security', /\b(security|pen-?test|vulnerab\w+|soc ?2|audit|retention|access review)\b/i],
+];
+const topicFor = (text: string) => TOPICS.find(([, re]) => re.test(text))?.[0] ?? null;
+
+// Replies that commit to nothing specific: "I'll do that", "let me look into it".
+const VAGUE = /^(?:do|handle|take care of|look into|check|chase|fix|sort out|deal with|action|follow up on)\s+(?:it|that|this|them|those|those ones)$/i;
+
 async function viaGemini(text: string, meeting: string, weekday: string, people: string[]): Promise<Extracted[]> {
   const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -76,19 +94,36 @@ function viaRules(text: string, meeting: string, people: string[]): Extracted[] 
       else if (addr) owner = addr[1];
       else if (will && !/^(We|They|It|This|That|Someone)$/.test(will[1])) owner = will[1];
       if (owner) owner = people.find((p) => p.toLowerCase().split(' ')[0] === owner!.toLowerCase().split(' ')[0]) || owner;
-      const clean = sentence.replace(/^(\w+)[, ]+(can|could|will|would|please)( you)?\s+/i, '').replace(/^(I'll|I will|let me)\s+/i, '').replace(/\s+(?:by|on|before|until)\s+(?:next |this )?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|today|eod|end of (?:the )?(?:day|week|month)|next week)\b.*$/i, '').replace(/\s+(?:today|tomorrow)$/i, '').replace(/[.!?]+$/, '');
+      const clean = sentence
+        .replace(/^(\w+)[, ]+(can|could|will|would|please)( you)?\s+/i, '')
+        .replace(/^(I'll|I will|let me)\s+/i, '')
+        .replace(new RegExp(`\\s+(?:by|on|before|until|due)\\s+${DATEY}\\b.*$`, 'i'), '')
+        .replace(/\s+(?:today|tomorrow)$/i, '')
+        .replace(/[.!?,]+$/, '')
+        .trim();
+      // "I'll do that" is a reply, not a commitment anyone could act on later.
+      if (VAGUE.test(clean) || clean.replace(/[^a-z]/gi, '').length < 10) continue;
       out.push({
         type: decision && !action ? 'decision' : 'action',
         text: clean.charAt(0).toUpperCase() + clean.slice(1),
         owner: decision && !action ? null : owner,
         deadline,
         source_excerpt: sentence,
-        workstream: null,
+        workstream: topicFor(sentence),
       });
     }
   }
-  // A reply that restates an item (same owner and date) is the same commitment.
-  return out.filter((x, i) => !x.owner || !x.deadline || out.findIndex((y) => y.owner === x.owner && y.deadline === x.deadline && y.type === x.type) === i);
+  // A reply often restates a commitment ("Yes, I'll raise the PO by Monday the 12th"). Same owner
+  // and same opening wording means one item; keep whichever version carries a deadline.
+  const key = (x: Extracted) =>
+    `${x.owner ?? ''}|${x.type}|${x.text.toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\s+/).filter(Boolean).slice(0, 3).join(' ')}`;
+  const best = new Map<string, Extracted>();
+  for (const x of out) {
+    const k = key(x);
+    const prev = best.get(k);
+    if (!prev || (!prev.deadline && x.deadline)) best.set(k, x);
+  }
+  return [...best.values()];
 }
 
 export async function extract(text: string, meeting: string, weekday: string, people: string[]): Promise<{ items: Extracted[]; engine: 'gemini' | 'rules'; note?: string }> {

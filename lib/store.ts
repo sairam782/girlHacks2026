@@ -93,7 +93,7 @@ export function ingestItems(input: { projectId: string; title: string; kind: Sou
   });
 }
 
-export interface ItemPatch { text?: string; owner?: string | null; deadline?: string | null; done?: boolean; type?: 'action' }
+export interface ItemPatch { text?: string; owner?: string | null; deadline?: string | null; done?: boolean; type?: 'action'; nudge?: boolean }
 
 export function patchItem(id: string, p: ItemPatch) {
   return mutate((s, log) => {
@@ -108,6 +108,9 @@ export function patchItem(id: string, p: ItemPatch) {
     if (p.type === 'action' && it.type !== 'action') it.type = 'action';
     if (p.deadline !== undefined && p.deadline !== it.deadline) { ev('deadline_moved', it.deadline, p.deadline); it.deadline = p.deadline; }
     if (p.text !== undefined && p.text.trim() && p.text !== it.text) { ev('edited', it.text, p.text); it.text = p.text.trim(); }
+    // A nudge is a reminder sent to the owner with the evidence attached. Recording it means the
+    // next person to open this leaf can see it was already chased, and when.
+    if (p.nudge) ev('nudged', null, nameOf(it.owner_id));
     if (p.done !== undefined && (p.done ? 'done' : 'open') !== it.status) {
       it.status = p.done ? 'done' : 'open';
       it.done_at = p.done ? new Date().toISOString() : null;
