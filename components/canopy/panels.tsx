@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { C, CT, initials, type LeafState } from './data';
 import { tint } from './geometry';
-import { Orb } from './trees';
 import { fmt, fmtShort } from '@/lib/dates';
 import type { VItem } from '@/lib/view';
 import type { EventType, Person, Source } from '@/lib/types';
@@ -17,43 +16,6 @@ const secondaryBtn = { height: 38, padding: '0 12px', borderRadius: 10, backgrou
 const input = { height: 34, padding: '0 10px', borderRadius: 9, border: '1px solid #dcdad0', background: '#fff', fontSize: 13, color: '#1d2620', fontFamily: 'inherit', boxSizing: 'border-box', width: '100%' } as const;
 
 export interface Person2 { name: string; init: string; bg: string; ratio: string; pct: string; bar: string }
-export interface OweItem { id: string; title: string; sub: string; state: LeafState; go: () => void }
-
-export function AskCanopy({ who, owe, openVoice }: { who: string; owe: OweItem[]; openVoice: () => void }) {
-  const first = who.split(' ')[0];
-  const late = owe.filter((o) => o.state === 'r' || o.state === 'd').length;
-  return (
-    <section style={{ ...card, padding: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={cardTitle}>Morning briefing</span>
-        <span style={{ fontFamily: mono, fontSize: 10.5, color: '#7a857e', border: '1px solid #e4e2d9', borderRadius: 5, padding: '1px 6px' }}>V</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, padding: 14, borderRadius: 13, background: 'linear-gradient(135deg, #eaf5ef, #f4f6ec)' }}>
-        <Orb state="idle" size={46} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, lineHeight: 1.4, color: '#1d2620' }}>
-            {owe.length ? `${first}, you owe ${owe.length} thing${owe.length > 1 ? 's' : ''} this week.${late ? ` ${late} ${late > 1 ? 'are' : 'is'} late.` : ''}` : `${first}, nothing is due this week.`}
-          </div>
-          <button className="hov-primary" onClick={openVoice} style={{ marginTop: 8, height: 30, padding: '0 12px', borderRadius: 15, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 12.5, cursor: 'pointer' }}>
-            Play 60-second briefing
-          </button>
-        </div>
-      </div>
-      {owe.length > 0 && <div style={{ fontSize: 12.5, fontWeight: 500, color: '#3a453e', margin: '16px 0 4px' }}>What you owe this week</div>}
-      {owe.map((o) => (
-        <button key={o.id} onClick={o.go} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', border: 'none', borderTop: '1px solid #efeee7', background: 'none', cursor: 'pointer', textAlign: 'left' }}>
-          <span style={{ width: 14, height: 8, borderRadius: '0 100% 0 100%', flex: 'none', background: C[o.state], transition: 'background 1.6s' }} />
-          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 13.5, color: '#1d2620' }}>{o.title}</span>
-            <span style={{ fontSize: 11.5, color: CT[o.state] }}>{o.sub}</span>
-          </span>
-          <span style={{ color: '#b3b9b4' }}>›</span>
-        </button>
-      ))}
-    </section>
-  );
-}
-
 export function UnownedDecisions({ seeds, people, onPlant }: { seeds: VItem[]; people: Person[]; onPlant: (id: string, owner: string) => void }) {
   const [picking, setPicking] = useState<string | null>(null);
   const [typed, setTyped] = useState('');

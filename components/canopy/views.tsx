@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { C, CT, initials, type LeafState } from './data';
-import { Orb, Wave } from './trees';
 import { card, mono, serif } from './panels';
 import { fmt, fmtShort, todayISO } from '@/lib/dates';
 import type { History } from '@/lib/history';
@@ -202,68 +201,6 @@ export function TimelineView({ hist, items }: { hist: (History & { events: Commi
 
 function Empty({ text }: { text: string }) {
   return <div style={{ ...card, flex: 1, margin: '14px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8a948d', fontSize: 13.5 }}>{text}</div>;
-}
-
-// The 60-second briefing: script, audio (ElevenLabs when configured, otherwise the browser voice), live transcript.
-export function BriefingDock({ personId, personName, asof, onClose }: { personId: string; personName: string; asof: string; onClose: () => void }) {
-  const [script, setScript] = useState('');
-  const [audio, setAudio] = useState<string | null>(null);
-  const [status, setStatus] = useState<'loading' | 'speaking' | 'done' | 'error'>('loading');
-  const [note, setNote] = useState('');
-  const [run, setRun] = useState(0);
-  const el = useRef<HTMLAudioElement | null>(null);
-
-  useEffect(() => {
-    let dead = false;
-    setStatus('loading'); setScript(''); setNote('');
-    fetch('/api/briefing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ personId, asof }) })
-      .then((r) => r.json())
-      .then((j) => {
-        if (dead) return;
-        if (j.error) throw new Error(j.error);
-        setScript(j.script); setAudio(j.audio); setNote(j.note || (j.cached ? 'Cached audio for today' : ''));
-        setStatus('speaking');
-        if (!j.audio && 'speechSynthesis' in window) {
-          const u = new SpeechSynthesisUtterance(j.script);
-          u.onend = () => setStatus('done');
-          window.speechSynthesis.cancel();
-          window.speechSynthesis.speak(u);
-        } else if (!j.audio) setStatus('done');
-      })
-      .catch((e) => { if (!dead) { setNote(e.message); setStatus('error'); } });
-    return () => { dead = true; if ('speechSynthesis' in window) window.speechSynthesis.cancel(); };
-  }, [personId, asof, run]);
-
-  useEffect(() => { if (audio && status === 'speaking') el.current?.play().catch(() => setNote('Press play to start the briefing.')); }, [audio, status]);
-
-  return (
-    <>
-      <div onClick={onClose} style={{ position: 'absolute', inset: 0, zIndex: 20, background: 'linear-gradient(180deg, rgba(243,242,236,0) 35%, rgba(243,242,236,0.75))' }} />
-      <div data-screen-label="04 Briefing" style={{ position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)', width: 'min(680px, calc(100% - 32px))', zIndex: 21, display: 'grid', gridTemplateColumns: '128px minmax(0,1fr)', gap: 22, alignItems: 'center', padding: '20px 22px 20px 16px', boxSizing: 'border-box', background: 'rgba(255,255,255,0.94)', backdropFilter: 'blur(18px)', border: '1px solid #e4e2d9', borderRadius: 20, boxShadow: '0 24px 60px rgba(40,55,45,0.18)' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-          <Orb state={status === 'speaking' ? 'speaking' : status === 'done' ? 'done' : 'idle'} size={104} />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, height: 14 }}>
-            {status === 'speaking' && <Wave />}
-            <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#2f8a77' }}>{status === 'loading' ? 'Writing' : status === 'speaking' ? 'Speaking' : status === 'done' ? 'Done' : 'Error'}</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8a948d' }}>Morning briefing · {personName}</span>
-            <span style={{ display: 'flex', gap: 6 }}>
-              {status === 'done' && <button onClick={() => setRun((x) => x + 1)} style={{ background: '#fff', border: '1px solid #dcdad0', borderRadius: 7, padding: '3px 8px', fontSize: 11.5, cursor: 'pointer' }}>Replay</button>}
-              <button onClick={onClose} style={{ background: 'none', border: '1px solid #e4e2d9', borderRadius: 7, padding: '3px 8px', fontFamily: mono, fontSize: 10, color: '#7a857e', cursor: 'pointer' }}>ESC</button>
-            </span>
-          </div>
-          <div style={{ fontFamily: serif, fontSize: 20, lineHeight: 1.3, color: '#16211b', minHeight: 60, maxHeight: 190, overflowY: 'auto' }}>
-            {status === 'loading' ? 'Reading your commitments…' : status === 'error' ? note : script}
-          </div>
-          {audio && <audio ref={el} key={audio + run} src={audio} controls onEnded={() => setStatus('done')} style={{ width: '100%', height: 32 }} />}
-          {note && status !== 'error' && <span style={{ fontSize: 11.5, color: '#8a948d' }}>{note}</span>}
-        </div>
-      </div>
-    </>
-  );
 }
 
 export { initials };

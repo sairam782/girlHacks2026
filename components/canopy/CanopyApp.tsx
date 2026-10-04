@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AV, C, initials, type GroveProject } from './data';
-import { AskCanopy, BranchNotes, CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
+import { MorningBriefing, TalkButton, type BriefingItem } from './briefing';
+import { BranchNotes, CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
 import { CanvasBg, GroveTree, ProjectTree } from './trees';
-import { BriefingDock, IngestModal, ListView, NewProjectModal, SourcesView, TimelineView } from './views';
+import { IngestModal, ListView, NewProjectModal, SourcesView, TimelineView } from './views';
 import { addDays, diffDays, fmt, fmtLong } from '@/lib/dates';
 import type { History } from '@/lib/history';
 import type { AppState, CommitmentEvent } from '@/lib/types';
@@ -34,7 +35,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const [pid, setPid] = useState<string | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
-  const [voice, setVoice] = useState(false);
+  const [voice, setVoice] = useState(false); // true while the briefing is playing
+  const [playTick, setPlayTick] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [ingest, setIngest] = useState(false);
   const [newProj, setNewProj] = useState(false);
@@ -93,20 +95,20 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
       .sort((a, b) => a.v.it.deadline!.localeCompare(b.v.it.deadline!));
   }, [perProject, me, asof]);
 
-  const openLeaf = useCallback((projectId: string, id: string | null) => { setPid(projectId); setScreen('tree'); setTab('tree'); setSel(id); setVoice(false); }, []);
-  const goGrove = () => { setScreen('grove'); setSel(null); setVoice(false); };
-  const openProject = (id: string) => { setPid(id); setScreen('tree'); setTab('tree'); setSel(null); setVoice(false); };
-  const openVoice = useCallback(() => { if (!me) { setToast('Add a source first so Canopy knows who is on the team.'); return; } setVoice(true); setSel(null); }, [me]);
+  const openLeaf = useCallback((projectId: string, id: string | null) => { setPid(projectId); setScreen('tree'); setTab('tree'); setSel(id); }, []);
+  const goGrove = () => { setScreen('grove'); setSel(null); };
+  const openProject = (id: string) => { setPid(id); setScreen('tree'); setTab('tree'); setSel(null); };
+  const openVoice = useCallback(() => { if (!me) { setToast('Add a source first so Canopy knows who is on the team.'); return; } setSel(null); setPlayTick((t) => t + 1); }, [me]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (/INPUT|TEXTAREA|SELECT/.test((e.target as HTMLElement | null)?.tagName ?? '')) return;
-      if (e.key === 'Escape') { if (voice) setVoice(false); else if (sel) setSel(null); }
-      else if ((e.key === 'v' || e.key === 'V') && !voice && !e.metaKey && !e.ctrlKey) openVoice();
+      if (e.key === 'Escape') { if (sel) setSel(null); }
+      else if ((e.key === 'v' || e.key === 'V') && !e.metaKey && !e.ctrlKey) openVoice();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [voice, sel, openVoice]);
+  }, [sel, openVoice]);
 
   const onHover = useCallback((id: string | null) => setHover(id), []);
   const onSelect = useCallback((id: string) => setSel(id), []);
@@ -140,6 +142,12 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
     const ratio = s.kept / s.total;
     return { name: s.name, init: initials(s.name), bg: AV[i % AV.length], ratio: `${s.kept}/${s.total}`, pct: Math.round(ratio * 100) + '%', bar: ratio >= 0.8 ? '#4f9d69' : ratio >= 0.6 ? '#9cbf5a' : '#e3a33b' };
   });
+  const firstSeed = perProject.flatMap((x) => x.vs.filter(isSeed).map((v) => ({ v, p: x.p })))[0];
+  const briefingItems: BriefingItem[] = [
+    ...owe.slice(0, 3).map(({ v, p }): BriefingItem => ({ text: `${v.it.text} · ${v.d.label.toLowerCase()}`, kind: v.d.state === 'r' || v.d.state === 'd' ? 'overdue' : 'soon', go: () => openLeaf(p.id, v.it.id) })),
+    ...(owe.length > 3 ? [{ text: `${owe.length - 3} more this week`, kind: 'soon' as const }] : []),
+    { text: allSeeds === 0 ? 'Every decision has an owner' : `${allSeeds} decision${allSeeds === 1 ? '' : 's'} still need${allSeeds === 1 ? 's' : ''} an owner`, kind: 'seed', go: firstSeed ? () => openLeaf(firstSeed.p.id, null) : undefined },
+  ];
   const highlight = new Set(voice ? owe.filter((o) => o.p.id === pid).map((o) => o.v.it.id) : []);
   const grove: GroveProject[] = perProject.map(({ p, h }, i) => ({ id: p.id, name: p.name, health: h.health, seed: 5 + (hash(p.id) % 40), h: 345, foliage: 20 + Math.min(120, h.open * 6), slot: i % 3 }));
   const owners = [...new Set(vs.filter((v) => v.owner && v.d.state !== 'x').map((v) => v.owner!))];
@@ -347,29 +355,19 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
                   <button className="hov-zoom" onClick={() => setZoom((z) => Math.max(0.6, +(z / 1.2).toFixed(2)))} style={{ width: 34, height: 34, border: 'none', borderTop: '1px solid #eeede6', background: 'none', fontSize: 17, color: '#3a453e', cursor: 'pointer' }}>−</button>
                   <button className="hov-zoom" onClick={() => setZoom(1)} style={{ width: 34, height: 34, border: 'none', borderTop: '1px solid #eeede6', background: 'none', fontFamily: mono, fontSize: 9.5, color: '#3a453e', cursor: 'pointer' }}>FIT</button>
                 </div>
-                {voice && me && <BriefingDock personId={me.id} personName={me.name} asof={asof} onClose={() => setVoice(false)} />}
               </div>
             )}
           </div>
         )}
-        {voice && me && !isTree && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 40 }}><div style={{ position: 'absolute', inset: 0 }}><BriefingDock personId={me.id} personName={me.name} asof={asof} onClose={() => setVoice(false)} /></div></div>
-        )}
-        {voice && me && isTree && tab !== 'tree' && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 40 }}><div style={{ position: 'absolute', inset: 0 }}><BriefingDock personId={me.id} personName={me.name} asof={asof} onClose={() => setVoice(false)} /></div></div>
-        )}
       </div>
 
       {railShow && (
-        <aside style={{ width: wide ? 372 : 330, flex: 'none', display: 'flex', flexDirection: 'column', gap: 12, padding: '14px 16px 16px 0', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
+        <aside style={{ width: wide ? 372 : 330, flex: 'none', display: 'flex', flexDirection: 'column', gap: 12, padding: selected ? '14px 16px 16px 0' : '14px 16px 104px 0', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
           {selected ? (
             <CommitmentPanel key={selected.it.id + selected.events.length} v={selected} source={data.sources.find((s) => s.id === selected.it.source_id)} people={data.people} onClose={() => setSel(null)} onPatch={patch} />
           ) : (
             <>
-              {me && (
-                <AskCanopy who={me.name} openVoice={openVoice}
-                  owe={owe.map(({ v, p }) => ({ id: v.it.id, title: v.it.text, sub: `${v.d.label} · ${p.name}`, state: v.d.state === 'x' ? 'g' : v.d.state, go: () => openLeaf(p.id, v.it.id) }))} />
-              )}
+              <MorningBriefing dateLabel={fmt(asof)} items={briefingItems} personId={me?.id ?? null} asof={asof} playTick={playTick} onPlaying={setVoice} />
               <UnownedDecisions seeds={seeds} people={data.people} onPlant={(id, owner) => patch(id, { owner, type: 'action' })} />
               <BranchNotes decisions={decisions} sources={data.sources} />
               <FollowThrough people={stats} />
@@ -378,6 +376,9 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
           )}
         </aside>
       )}
+
+      {/* Starts the briefing card's player. Hidden while it plays, and while a commitment is open so it does not cover the action buttons. */}
+      {!voice && !selected && <TalkButton onClick={openVoice} />}
 
       {ingest && data.projects.length > 0 && (
         <IngestModal projects={data.projects} projectId={pid} onClose={() => setIngest(false)}

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 const serif = "'Instrument Serif', serif";
 const mono = "'Geist Mono', monospace";
 
-export interface BriefingItem { text: string; kind: 'overdue' | 'soon' | 'seed' }
+export interface BriefingItem { text: string; kind: 'overdue' | 'soon' | 'seed'; go?: () => void }
 
 const SPEEDS = [1, 1.25, 1.5];
 const BARS = Array.from({ length: 40 }, (_, i) => 6 + Math.round(Math.abs(Math.sin(i * 1.7) * 14 + Math.sin(i * 0.6) * 8)));
@@ -19,13 +19,19 @@ function Marker({ kind }: { kind: BriefingItem['kind'] }) {
   return <span style={{ width: 14, height: 8, flex: 'none', borderRadius: '0 100% 0 100%', background: kind === 'overdue' ? '#b9573a' : '#e3a33b', transition: 'background 1.6s' }} />;
 }
 
-// Daily spoken briefing. Audio comes from ElevenLabs via /api/briefing; without an API key it
-// falls back to the browser's built-in speech so the demo still talks.
-export function MorningBriefing({ dateLabel, items, script }: { dateLabel: string; items: BriefingItem[]; script: string }) {
+// Daily spoken briefing. The script is built on the server from the person's real commitments;
+// audio comes from ElevenLabs via /api/briefing, and without a key it falls back to the browser's voice.
+// Last orb press this player has acted on; module-level so a remount does not replay or drop a press.
+let handledTick = 0;
+
+export function MorningBriefing({ dateLabel, items, personId, asof, playTick, onPlaying }: {
+  dateLabel: string; items: BriefingItem[]; personId: string | null; asof: string; playTick: number; onPlaying: (p: boolean) => void;
+}) {
+  const [script, setScript] = useState('');
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(() => Math.round((script.split(/\s+/).length / 150) * 60));
+  const [duration, setDuration] = useState(60);
   const [speed, setSpeed] = useState(0);
   const audio = useRef<HTMLAudioElement | null>(null);
   const audioFor = useRef('');
@@ -37,10 +43,19 @@ export function MorningBriefing({ dateLabel, items, script }: { dateLabel: strin
   }, []);
 
   useEffect(() => {
+    audio.current?.pause();
+    audio.current = null;
+    audioFor.current = '';
+    fallback.current = false;
+    window.speechSynthesis?.cancel();
+    setPlaying(false); setProgress(0); setScript(''); setDuration(60);
+  }, [personId, asof]);
+
+  useEffect(() => {
     if (audio.current) audio.current.playbackRate = SPEEDS[speed];
   }, [speed]);
 
-  const speakFallback = () => {
+  const speakFallback = (script: string) => {
     const synth = window.speechSynthesis;
     if (!synth) return;
     synth.cancel();
@@ -59,32 +74,42 @@ export function MorningBriefing({ dateLabel, items, script }: { dateLabel: strin
       setPlaying(false);
       return;
     }
-    if (fallback.current) return speakFallback();
-    if (!audio.current || audioFor.current !== script) {
+    if (fallback.current) return speakFallback(script);
+    if (!personId) return;
+    if (!audio.current || audioFor.current !== asof + personId) {
       setLoading(true);
       try {
-        const res = await fetch('/api/briefing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: script }) });
-        if (!res.ok) throw new Error('briefing audio unavailable');
-        const url = URL.createObjectURL(await res.blob());
+        const res = await fetch('/api/briefing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ personId, asof }) });
+        const j = await res.json();
+        if (!res.ok) throw new Error(j.error || 'briefing unavailable');
+        setScript(j.script);
+        setDuration(Math.round((j.script.split(/\s+/).length / 150) * 60));
+        if (!j.audio) { fallback.current = true; setLoading(false); return speakFallback(j.script); }
         audio.current?.pause();
-        const a = new Audio(url);
+        const a = new Audio(j.audio);
         a.playbackRate = SPEEDS[speed];
         a.onloadedmetadata = () => setDuration(a.duration);
         a.ontimeupdate = () => setProgress(a.duration ? a.currentTime / a.duration : 0);
         a.onended = () => setPlaying(false);
         audio.current = a;
-        audioFor.current = script;
+        audioFor.current = asof + personId;
       } catch {
-        fallback.current = true;
         setLoading(false);
-        return speakFallback();
+        return;
       }
       setLoading(false);
     }
     if (audio.current!.ended) audio.current!.currentTime = 0;
-    await audio.current!.play();
-    setPlaying(true);
+    try { await audio.current!.play(); setPlaying(true); } catch { setPlaying(false); } // autoplay blocked: stay ready for a manual press
   };
+
+  const toggleRef = useRef(toggle);
+  toggleRef.current = toggle;
+  useEffect(() => { onPlaying(playing); }, [playing, onPlaying]);
+  useEffect(() => {
+    if (playTick > handledTick) { handledTick = playTick; if (!playing) void toggleRef.current(); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playTick]);
 
   const played = Math.round(progress * BARS.length);
 
@@ -96,9 +121,10 @@ export function MorningBriefing({ dateLabel, items, script }: { dateLabel: strin
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13.5, lineHeight: 1.35 }}>
         {items.map((it) => (
-          <div key={it.text} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div key={it.text} onClick={it.go} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: it.go ? 'pointer' : undefined }}>
             <Marker kind={it.kind} />
-            {it.text}
+            <span style={{ flex: 1, minWidth: 0 }}>{it.text}</span>
+            {it.go && <span style={{ color: '#b3b9b4' }}>›</span>}
           </div>
         ))}
       </div>
@@ -118,7 +144,7 @@ export function MorningBriefing({ dateLabel, items, script }: { dateLabel: strin
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: mono, fontSize: 10.5, color: '#4a554e' }}>
-            <span>{loading ? 'Loading…' : fmt(progress * duration)}</span>
+            <span>{loading ? 'Writing…' : fmt(progress * duration)}</span>
             <button onClick={() => setSpeed((s) => (s + 1) % SPEEDS.length)} aria-label="Playback speed"
               style={{ background: 'none', border: 'none', padding: '0 4px', fontFamily: mono, fontSize: 10.5, color: '#4a554e', cursor: 'pointer' }}>
               {SPEEDS[speed]}x
@@ -127,6 +153,7 @@ export function MorningBriefing({ dateLabel, items, script }: { dateLabel: strin
           </div>
         </div>
       </div>
+      {script && <div style={{ fontFamily: serif, fontSize: 16, lineHeight: 1.3, color: '#2b3630' }}>{script}</div>}
       <div style={{ textAlign: 'center', fontFamily: mono, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#65706a' }}>Voice · Powered by ElevenLabs</div>
     </section>
   );
