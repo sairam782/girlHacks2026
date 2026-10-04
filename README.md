@@ -1,10 +1,10 @@
-# Canopy - [Canopy – Live Demo](https://canopy-girlhacks.vercel.app/)
+# Canopy - 
 
 **Meetings end. Commitments should not.**
 
 Canopy turns meeting talk into tracked action. Paste in a transcript, a chat thread, or a doc. Canopy pulls out every decision, who owns it, and when it is due, and grows each one into a leaf on the project's tree. Each person then gets a 60-second spoken briefing each morning on what they owe, and can talk back to change it.
 
-Live app: [CANOPY-URL] (deploying)
+[Canopy – Live Demo](https://canopy-girlhacks.vercel.app/)
 
 ## The problem
 
