@@ -31,7 +31,7 @@ export function MoodCard({ onOpen }: { onOpen: () => void }) {
         Open your report
       </button>
       <div style={{ textAlign: 'center', fontFamily: mono, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#65706a' }}>
-        Tone · Powered by Azure OpenAI
+        Tone · Read from your own words
       </div>
     </section>
   );
