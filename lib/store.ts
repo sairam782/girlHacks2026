@@ -51,9 +51,11 @@ export async function getState(): Promise<AppState> {
 }
 
 export async function historyFor(projectId: string): Promise<CommitmentEvent[]> {
+  const local = (await getState()).events.filter((e) => e.project_id === projectId);
   const t = await tigerHistory(projectId);
-  if (t) return t;
-  return (await getState()).events.filter((e) => e.project_id === projectId);
+  // Tiger only holds what was written through the app. Seeded or imported history lives in the
+  // JSON store, so fall back whenever Tiger knows less than we already do.
+  return t && t.length >= local.length ? t : local;
 }
 
 export const createProject = (name: string) =>
@@ -73,23 +75,42 @@ export function findOrAddPerson(s: AppState, name: string): Person {
   return p;
 }
 
+/** Same wording, same owner, same project: one commitment, however many times it was said. */
+const itemKey = (projectId: string, text: string, ownerId: string | null) =>
+  `${projectId}|${ownerId ?? ''}|${text.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim()}`;
+
 export function ingestItems(input: { projectId: string; title: string; kind: SourceKind; meetingDate: string; text: string }, extracted: Extracted[]) {
   return mutate((s, log) => {
     if (!s.projects.some((p) => p.id === input.projectId)) throw new Error('Unknown project');
+
+    // Pasting the same transcript twice (a double click, or a re-paste after a tweak) used to
+    // grow a second copy of every leaf. Hand back what that text produced the first time.
+    const same = s.sources.find((x) => x.project_id === input.projectId && x.text === input.text && input.text.length > 0);
+    if (same) {
+      return { source: same, items: s.items.filter((i) => i.source_id === same.id), duplicate: true as const };
+    }
+
     const src: Source = { id: randomUUID().slice(0, 8), project_id: input.projectId, kind: input.kind, title: input.title, meeting_date: input.meetingDate, text: input.text, created_at: new Date().toISOString(), extracted: extracted.length };
     s.sources.push(src);
     const created: ActionItem[] = [];
     // Created events carry the meeting's time so history lines up with when the commitment was made.
     const at = new Date(`${input.meetingDate}T09:00:00`);
     const when = (at.getTime() > Date.now() ? new Date() : at).toISOString();
+    // Overlapping sources restate the same promise; keep the first and skip the repeat.
+    const seen = new Set(s.items.filter((i) => i.status === 'open').map((i) => itemKey(i.project_id, i.text, i.owner_id)));
+    let skipped = 0;
     for (const x of extracted) {
       const owner = x.owner ? findOrAddPerson(s, x.owner) : null;
+      const key = itemKey(input.projectId, x.text, owner?.id ?? null);
+      if (seen.has(key)) { skipped++; continue; }
+      seen.add(key);
       const it: ActionItem = { id: randomUUID().slice(0, 8), project_id: input.projectId, source_id: src.id, owner_id: owner?.id ?? null, type: x.type, text: x.text, deadline: x.deadline, status: 'open', source_excerpt: x.source_excerpt, workstream: (x.workstream || input.title).trim(), created_at: when, done_at: null };
       s.items.push(it);
       created.push(it);
       log({ action_item_id: it.id, project_id: it.project_id, event_type: 'created', old_value: null, new_value: JSON.stringify({ owner: owner?.name ?? null, deadline: x.deadline }), time: when });
     }
-    return { source: src, items: created };
+    src.extracted = created.length;
+    return { source: src, items: created, skipped };
   });
 }
 
