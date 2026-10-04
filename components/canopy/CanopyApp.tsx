@@ -9,6 +9,7 @@ import MoodMirror from './mood/MoodMirror';
 import { BranchNotes, CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
 import { CanvasBg, GroveTree, ProjectTree } from './trees';
 import { IngestModal, ListView, NewProjectModal, SourcesView, TimelineView } from './views';
+import { PeopleView } from './people';
 import { addDays, diffDays, fmt, fmtLong } from '@/lib/dates';
 import type { History } from '@/lib/history';
 import type { AppState, CommitmentEvent } from '@/lib/types';
@@ -22,7 +23,7 @@ export interface CanopyAppProps {
   leafLabels?: 'at-risk' | 'all' | 'none';
 }
 
-type Screen = 'grove' | 'tree' | 'mood';
+type Screen = 'grove' | 'tree' | 'mood' | 'people';
 type Tab = 'tree' | 'list' | 'sources' | 'timeline';
 type Data = AppState & { today: string; engines: { gemini: boolean; elevenlabs: boolean; tiger: boolean } };
 
@@ -102,6 +103,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const goMood = () => { setScreen('mood'); setSel(null); };
   const openCommitment = (id: string) => { const it = data?.items.find((i) => i.id === id); if (it) openLeaf(it.project_id, id); };
   const goGrove = () => { setScreen('grove'); setSel(null); };
+  const goPeople = () => { setScreen('people'); setSel(null); };
+  const viewAs = (id: string) => { setViewer(id); safe(() => localStorage.setItem('canopy.viewer', id)); };
   const openProject = (id: string) => { setPid(id); setScreen('tree'); setTab('tree'); setSel(null); };
   const openVoice = useCallback(() => { if (!me) { setToast('Add a source first so Canopy knows who is on the team.'); return; } setSel(null); setAgent(true); }, [me]);
 
@@ -151,8 +154,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const firstSeed = perProject.flatMap((x) => x.vs.filter(isSeed).map((v) => ({ v, p: x.p })))[0];
   const briefingItems: BriefingItem[] = [
     ...owe.slice(0, 3).map(({ v, p }): BriefingItem => ({ text: `${v.it.text} · ${v.d.label.toLowerCase()}`, kind: v.d.state === 'r' || v.d.state === 'd' ? 'overdue' : 'soon', go: () => openLeaf(p.id, v.it.id) })),
-    ...(owe.length > 3 ? [{ text: `${owe.length - 3} more this week`, kind: 'soon' as const }] : []),
-    { text: allSeeds === 0 ? 'Every decision has an owner' : `${allSeeds} decision${allSeeds === 1 ? '' : 's'} still need${allSeeds === 1 ? 's' : ''} an owner`, kind: 'seed', go: firstSeed ? () => openLeaf(firstSeed.p.id, null) : undefined },
+    ...(owe.length > 3 ? [{ text: `${owe.length - 3} more this week`, kind: 'soon' as const, go: goPeople }] : []),
+    { text: allSeeds === 0 ? 'Every decision has an owner' : `${allSeeds} decision${allSeeds === 1 ? '' : 's'} still need${allSeeds === 1 ? 's' : ''} an owner`, kind: 'seed', go: firstSeed ? () => openLeaf(firstSeed.p.id, firstSeed.v.it.id) : undefined },
   ];
   const allLeaves = perProject.flatMap((x) => layoutTree(x.vs).leaves);
   const highlight = new Set(voice ? owe.filter((o) => o.p.id === pid).map((o) => o.v.it.id) : []);
@@ -165,9 +168,9 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const nav: [string, string | number, (() => void) | undefined, boolean][] = [
     ['The Grove', data.projects.length, goGrove, screen === 'grove'],
     ['Add a source', '', data.projects.length ? () => setIngest(true) : () => setNewProj(true), false],
-    ['Sources', data.sources.length, project ? () => { setTab('sources'); setScreen('tree'); } : undefined, false],
+    ['Sources', data.sources.length, data.projects.length ? () => { if (!project) setPid(data.projects[0].id); setTab('sources'); setScreen('tree'); setSel(null); } : undefined, screen === 'tree' && tab === 'sources'],
     ['Mood Mirror', '', goMood, isMood],
-    ['People', data.people.length, undefined, false],
+    ['People', data.people.length, goPeople, screen === 'people'],
   ];
   const selectStyle = { height: 30, borderRadius: 8, border: '1px solid #e4e2d9', background: '#fff', fontSize: 12.5, color: '#2b3630', padding: '0 6px', fontFamily: 'inherit' } as const;
 
@@ -232,7 +235,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             {data.people.length > 0 && (
               <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7a857e' }}>
                 Viewing as
-                <select value={me?.id ?? ''} onChange={(e) => { setViewer(e.target.value); safe(() => localStorage.setItem('canopy.viewer', e.target.value)); }} style={selectStyle}>
+                <select value={me?.id ?? ''} onChange={(e) => viewAs(e.target.value)} style={selectStyle}>
                   {data.people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               </label>
@@ -299,6 +302,11 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
               )}
             </div>
           </div>
+        )}
+
+        {screen === 'people' && (
+          <PeopleView people={data.people} perProject={perProject} stats={followThrough(data, asof)} viewerId={me?.id ?? null}
+            onOpen={(projectId, id) => openLeaf(projectId, id)} onViewAs={viewAs} />
         )}
 
         {isMood && <MoodMirror leaves={allLeaves} motes={motes} onBack={goGrove} onOpenCommitment={openCommitment} />}
