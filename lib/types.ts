@@ -1,5 +1,5 @@
 // Data model from the README: Project, Person, ActionItem, CommitmentEvent (plus Source for ingested text).
-export type EventType = 'created' | 'reassigned' | 'deadline_moved' | 'edited' | 'done' | 'reopened' | 'overdue' | 'nudged';
+export type EventType = 'created' | 'reassigned' | 'deadline_moved' | 'edited' | 'done' | 'reopened' | 'overdue' | 'nudged' | 'mood_flagged';
 export type SourceKind = 'mtg' | 'chat' | 'doc';
 
 export interface Project { id: string; name: string; created_at: string }
@@ -13,6 +13,8 @@ export interface ActionItem {
   type: 'action' | 'decision'; text: string; deadline: string | null;
   status: 'open' | 'done'; source_excerpt: string; workstream: string;
   created_at: string; done_at: string | null;
+  /** Set from Mood Mirror when the owner sounded strained while committing, e.g. "anxious". Raises slip risk. */
+  mood_flag?: string | null;
 }
 export interface CommitmentEvent {
   time: string; action_item_id: string; project_id: string; event_type: EventType;

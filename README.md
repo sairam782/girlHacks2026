@@ -37,13 +37,14 @@ A decision that nobody owns yet is a **seed**. It shows in the "Unowned decision
 | Screen | What it shows |
 | --- | --- |
 | **The Grove** | Every project as a tree, with its health percentage and leaf counts |
-| **Tree view** | One project's tree. Tabs for **List**, **Sources** (the ingested text) and **Timeline** (every event on every leaf) |
-| **Commitment panel** | Click a leaf: owner, due date, slip risk, history, the source quote, plus **Edit owner / date** and **Mark done** |
+| **Add a source** | Paste text, Gemini extracts, then you **review** every item (fix owner, date, workstream, or untick it) before it is planted. Pasting the same text twice is refused, and items already on the tree are skipped |
+| **Tree view** | One project's tree. Tabs for **List**, **Sources** (the ingested text, each with **Delete** to undo a bad paste) and **Timeline** (every event on every leaf) |
+| **Commitment panel** | Click a leaf: owner, due date, slip risk, history, the source quote, plus **Mark done**, **Nudge**, **Edit owner / date** and **Delete** |
 | **Morning briefing** | Card in the right rail: what you owe (overdue first), a play button, waveform and speed control. Voiced by ElevenLabs |
 | **Talk to Canopy** | The green orb at the bottom right (or press **V**). Ask "What do I owe?", or say "Push the pricing to Thursday", "Mark the budget done", "Give the PO to Lena". Canopy makes the change and answers out loud |
 | **People** | Everyone on the team, sorted by at-risk work: open commitments, follow-through, and **View as** to see the app as them |
-| **Mood Mirror** | A private per-person report on how a meeting felt (see below) |
-| **Time travel** | Sidebar buttons that move "today" forward or back, so you can watch leaves yellow, wilt and fall |
+| **Mood Mirror** | A private per-person report on how a meeting felt (see below). One click flags the leaves someone took on under strain, which raises their slip risk |
+| **Time travel** | Sidebar buttons that move "today" forward or back, so you can watch leaves yellow, wilt and fall. **Reset demo data** restores the demo grove |
 | **Viewing as** | Header dropdown that switches whose briefing, owed list and voice agent you see |
 
 ## How it works
@@ -63,7 +64,7 @@ Canopy tracks what people owe. Mood Mirror covers how the meeting felt while the
 2. **Tone per sentence.** Azure OpenAI labels every sentence as happy, confident, confused, anxious, frustrated, sad, angry, or neutral. Each label shows the exact words behind it, so nothing is a black box.
 3. **Feelings linked to causes.** It connects a mood shift to what triggered it, such as being cut off or having a question skipped.
 4. **Score and next steps.** Each person gets a mood score compared with the team average, plus 2 to 3 concrete next steps tied to specific moments in the meeting, and a spoken recap.
-5. **Linked commitments.** The report shows the leaves that person took on in the same meeting.
+5. **Linked commitments.** The report shows the leaves that person took on in the same meeting. **Share as at risk** is the person's own choice: it marks those leaves with the strained tone (for example "anxious"), each gets +15% slip risk and a note in its commitment panel saying the owner shared it, and the flag is logged as an event. The report itself stays private.
 
 **Optional face layer (opt-in).** If a person turns it on, their own webcam video is read to flag moments where words and expression disagree, like saying "sure, that works" while looking anxious. It is off by default and never applies to anyone who has not opted in.
 
@@ -116,10 +117,15 @@ Every key is optional. Without them, extraction and the voice agent use built-in
 | `AZURE_OPENAI_*` | Azure OpenAI tone labels and next steps for Mood Mirror (or `OPENAI_API_KEY`) |
 | `MOOD_MIRROR_URL` | Where the Python Mood Mirror service runs (default `http://127.0.0.1:8000`) |
 | `CANOPY_TODAY` | Pin "today" to a date for demos, e.g. `2026-10-09` |
+| `CANOPY_TZ` | Timezone "today" is measured in (default `America/New_York`), so a UTC server does not flip the date at 8 pm |
+| `CANOPY_DATA_DIR` | Where the JSON store and briefing audio live (default `.data/`; on Azure use `/home/data`) |
+| `CANOPY_ALLOW_RESET` | Set to `false` to turn off **Reset demo data** on a deployment with real data |
 
 The sidebar shows which engines are live (Gemini, ElevenLabs, Tiger Data) and which are on their fallback.
 
-App data lives in `.data/` (git-ignored, or `CANOPY_DATA_DIR`). On a host that wipes its disk on restart, set `DATABASE_URL` so history is kept in Tiger Data.
+App data lives in `.data/` (git-ignored, or `CANOPY_DATA_DIR`). To load the demo grove, run `npm run seed` or click **Reset demo data** in the sidebar. The Timeline merges Tiger Data with the local log, so seeded history shows even when `DATABASE_URL` is set.
+
+To put it online, follow [DEPLOY.md](DEPLOY.md) (Azure App Service, step by step).
 
 **Mood Mirror service.** The demo meetings and transcript uploads work with nothing else running. Recordings, the face layer, and the spoken recap need the Python service:
 
@@ -143,6 +149,7 @@ cd mood-mirror && pip install -r requirements.txt && uvicorn app:app --port 8000
 | `lib/voice.ts` | Voice agent intents: what you owe, briefing, move a date, mark done, reassign |
 | `lib/briefing.ts`, `lib/tts.ts` | Briefing script and ElevenLabs audio, cached per person per day |
 | `lib/store.ts`, `lib/tiger.ts`, `lib/history.ts` | JSON store, Tiger Data hypertable, history queries |
+| `scripts/demo-data.mjs`, `scripts/seed.mjs` | The demo grove, used by `npm run seed` and **Reset demo data** |
 | `lib/leaf.ts`, `lib/view.ts` | Leaf states, slip risk, tree layout, follow-through |
 | `mood-mirror/` | Python service: Scribe or Azure Speech, the face model, ElevenLabs voice |
 
@@ -153,7 +160,10 @@ cd mood-mirror && pip install -r requirements.txt && uvicorn app:app --port 8000
 | `GET /api/state` | Everything the UI needs, plus which engines are live |
 | `POST /api/projects` | Create a project |
 | `POST /api/ingest` | Extract items from pasted text into a project |
-| `PATCH /api/items/[id]` | Edit text, owner or date, mark done or reopen |
+| `POST /api/ingest` with `preview: true` | Extract only, for the review step; nothing is saved |
+| `PATCH /api/items/[id]` | Edit text, owner or date, mark done or reopen, nudge, set or clear the Mood Mirror flag |
+| `DELETE /api/items/[id]`, `/api/sources/[id]`, `/api/projects/[id]` | Delete an item, a source with its items, or a whole project |
+| `POST /api/reset` | Restore the demo grove (dates relative to today) |
 | `GET /api/history` | A project's events as of a date |
 | `POST /api/briefing`, `GET /api/briefing/audio` | A person's briefing script and its audio |
 | `POST /api/voice` | Run a spoken request and return the reply (and audio) |
@@ -181,7 +191,7 @@ cd mood-mirror && pip install -r requirements.txt && uvicorn app:app --port 8000
 
 **Source**: id, project_id, kind (meeting, chat, doc), title, meeting_date, text, extracted
 
-**ActionItem**: id, project_id, source_id, owner_id, type (action or decision), text, deadline, status (open or done), workstream, source_excerpt, created_at, done_at. Overdue is derived from the deadline, not stored.
+**ActionItem**: id, project_id, source_id, owner_id, type (action or decision), text, deadline, status (open or done), workstream, source_excerpt, created_at, done_at, mood_flag. Overdue is derived from the deadline, not stored.
 
 **CommitmentEvent** (Tiger Data hypertable): time, action_item_id, project_id, event_type, old_value, new_value
 
@@ -227,25 +237,26 @@ Target length is about 150 words, which reads out in roughly 60 seconds. Generat
 
 ## Demo flow
 
+0. Before you start: click **Reset demo data** so the grove is clean.
 1. Click **+ Paste a transcript**, load the sample vendor sync, and extract.
-2. Watch Gemini produce owners and deadlines, and the tree grow leaves. Click a leaf to show the source quote.
+2. Review what Gemini found, fix an owner, then **Plant** them and watch the tree grow. Click a leaf to show the source quote.
 3. Use **Time travel +3d** to watch leaves yellow, wilt and fall.
 4. Press play on the **Morning briefing**.
 5. Click the green orb (or press **V**) and say "Push the security review to Thursday". The leaf changes and the slip is logged.
 6. Open the **Timeline** tab to show how the deadline moved.
 7. Open **People** and use **View as** to hear another person's briefing.
-8. Open **Mood Mirror**: tone labels with the exact words, the cause of a mood shift, the score against the team average, and the next steps.
+8. Open **Mood Mirror**: tone labels with the exact words, the cause of a mood shift, the score against the team average, and the next steps. Click **Share as at risk**, then open one of those leaves to show its raised slip risk.
 
 ## Future ideas
 
 - Ingest automatically from Slack, Zoom and calendar invites
 - Nudges by text or email while a leaf is still yellow
 - A team-level health score across projects
-- Mood Mirror signals feeding slip risk, privately
+- Canopy suggests sharing a strained "yes" as risk right after a meeting (still the person's choice)
 
 ## Status
 
-Built: ingestion, Gemini extraction, the tree, list/sources/timeline views, manual edit, the morning briefing, the voice agent, the People page, time travel, Tiger Data history, and Mood Mirror. Recordings, the face layer and the spoken Mood Mirror recap need the Python service running.
+Built: ingestion with a review step, Gemini extraction, the tree, list/sources/timeline views, manual edit and delete, the morning briefing, the voice agent, the People page, time travel, demo reset, Tiger Data history, and Mood Mirror with its link to slip risk. Recordings, the face layer and the spoken Mood Mirror recap need the Python service running.
 
 ## Team
 

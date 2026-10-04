@@ -54,7 +54,7 @@ export function PeopleView({ people, perProject, stats, viewerId, onOpen, onView
                     </div>
                   </div>
                   {!isYou && (
-                    <button className="hov-soft" onClick={() => onViewAs(person.id)} style={{ flex: 'none', height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #e4e2d9', background: '#fff', fontSize: 11.5, color: '#3a453e', cursor: 'pointer' }}>View as</button>
+                    <button className="hov-crumb" onClick={() => onViewAs(person.id)} title={`See Canopy as ${person.name}`} style={{ flex: 'none', alignSelf: 'flex-start', marginTop: 2, padding: 0, border: 'none', background: 'none', fontSize: 11, color: '#9aa29c', cursor: 'pointer' }}>view as</button>
                   )}
                 </div>
 

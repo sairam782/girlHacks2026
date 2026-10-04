@@ -6,7 +6,7 @@ import { card, mono, serif } from './panels';
 import { fmt, fmtShort, todayISO } from '@/lib/dates';
 import type { History } from '@/lib/history';
 import type { VItem } from '@/lib/view';
-import type { CommitmentEvent, EventType, Project, Source, SourceKind } from '@/lib/types';
+import type { CommitmentEvent, EventType, Extracted, Project, Source, SourceKind } from '@/lib/types';
 
 const field = { height: 36, padding: '0 10px', borderRadius: 9, border: '1px solid #dcdad0', background: '#fff', fontSize: 13, color: '#1d2620', fontFamily: 'inherit', boxSizing: 'border-box' } as const;
 const lbl = { display: 'flex', flexDirection: 'column', gap: 5, fontSize: 11.5, color: '#7a857e' } as const;
@@ -24,6 +24,10 @@ Dana: We agreed to freeze the legacy API after cutover.
 Dana: Someone needs to tell Legal about the new timeline.
 Aiko: I'll run the SSO integration spike by end of week.`;
 
+type Draft = Extracted & { keep: boolean };
+
+// Paste → Gemini extracts → you review and fix → the reviewed items are planted. Nothing reaches the
+// tree until someone has looked at it, so a wrong owner or date never becomes "truth" silently.
 export function IngestModal({ projects, projectId, onClose, onDone }: {
   projects: Project[]; projectId: string | null; onClose: () => void; onDone: (r: { n: number; engine: string; note?: string; projectId: string }) => void;
 }) {
@@ -34,41 +38,108 @@ export function IngestModal({ projects, projectId, onClose, onDone }: {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [drafts, setDrafts] = useState<Draft[] | null>(null);
+  const [engine, setEngine] = useState('');
+  const [note, setNote] = useState<string | undefined>();
+  const [people, setPeople] = useState<string[]>([]);
 
-  const submit = async () => {
+  const post = async (extra: Record<string, unknown>) => {
+    const r = await fetch('/api/ingest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectId: pid, title, kind, meetingDate: date, text, ...extra }) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Extraction failed');
+    return j;
+  };
+
+  const extractNow = async () => {
     setBusy(true); setErr('');
     try {
-      const r = await fetch('/api/ingest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ projectId: pid, title, kind, meetingDate: date, text }) });
-      const j = await r.json();
-      if (!r.ok) throw new Error(j.error || 'Extraction failed');
-      onDone({ n: j.items.length, engine: j.engine, note: j.note, projectId: pid });
+      const j = await post({ preview: true });
+      setDrafts((j.items as Extracted[]).map((x) => ({ ...x, keep: true })));
+      setEngine(j.engine); setNote(j.note); setPeople(j.people || []);
+    } catch (e) { setErr((e as Error).message); }
+    setBusy(false);
+  };
+
+  const plant = async () => {
+    if (!drafts) return;
+    setBusy(true); setErr('');
+    try {
+      const keep = drafts.filter((d) => d.keep && d.text.trim()).map(({ keep: _k, ...x }) => x);
+      const j = await post({ items: keep, engine });
+      const skipped = j.skipped ? `${j.skipped} already on the tree ${j.skipped === 1 ? 'was' : 'were'} skipped.` : '';
+      onDone({ n: j.items.length, engine, note: [note, skipped].filter(Boolean).join(' ') || undefined, projectId: pid });
     } catch (e) { setErr((e as Error).message); setBusy(false); }
   };
 
+  const set = (i: number, patch: Partial<Draft>) => setDrafts((ds) => ds && ds.map((d, k) => (k === i ? { ...d, ...patch } : d)));
+  const kept = drafts?.filter((d) => d.keep).length ?? 0;
+  const small = { ...field, height: 30, fontSize: 12.5, padding: '0 8px' };
+  const found = drafts ? `${engine === 'gemini' ? 'Gemini' : 'Canopy'} found ${drafts.length} item${drafts.length === 1 ? '' : 's'}` : 'Add a source';
+
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(30,40,34,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ ...card, width: 'min(640px, 100%)', maxHeight: '100%', overflowY: 'auto', padding: 22, display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 24px 60px rgba(40,55,45,0.25)' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...card, width: drafts ? 'min(860px, 100%)' : 'min(640px, 100%)', maxHeight: '100%', overflowY: 'auto', padding: 22, display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 24px 60px rgba(40,55,45,0.25)' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <span style={{ fontFamily: serif, fontSize: 28, color: '#16211b' }}>Add a source</span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#7a857e' }}>×</button>
+          <span style={{ fontFamily: serif, fontSize: 28, color: '#16211b' }}>{found}</span>
+          <button onClick={onClose} aria-label="Close" style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#7a857e' }}>×</button>
         </div>
-        <p style={{ margin: 0, fontSize: 13, color: '#65706a', lineHeight: 1.45 }}>Paste a transcript, chat thread, or doc. Canopy pulls out every decision, owner, and deadline, and grows a leaf for each.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
-          <label style={lbl}>Project<select value={pid} onChange={(e) => setPid(e.target.value)} style={field}>{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-          <label style={lbl}>Type<select value={kind} onChange={(e) => setKind(e.target.value as SourceKind)} style={field}><option value="mtg">Meeting transcript</option><option value="chat">Chat thread</option><option value="doc">Doc</option></select></label>
-          <label style={lbl}>Meeting date<input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={field} /></label>
-        </div>
-        <label style={lbl}>Name (becomes the source label)<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Monday standup" style={field} /></label>
-        <label style={lbl}>
-          <span style={{ display: 'flex', justifyContent: 'space-between' }}>Text<button onClick={() => { setText(SAMPLE); setTitle(title || 'Vendor sync'); }} style={{ background: 'none', border: 'none', color: '#2f6b4f', cursor: 'pointer', fontSize: 11.5, padding: 0 }}>Load sample transcript</button></span>
-          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={11} placeholder="Paste here…" style={{ ...field, height: 'auto', padding: 10, lineHeight: 1.45, resize: 'vertical' }} />
-        </label>
+
+        {!drafts ? (
+          <>
+            <p style={{ margin: 0, fontSize: 13, color: '#65706a', lineHeight: 1.45 }}>Paste a transcript, chat thread, or doc. Canopy pulls out every decision, owner, and deadline. You review them before anything lands on the tree.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+              <label style={lbl}>Project<select value={pid} onChange={(e) => setPid(e.target.value)} style={field}>{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+              <label style={lbl}>Type<select value={kind} onChange={(e) => setKind(e.target.value as SourceKind)} style={field}><option value="mtg">Meeting transcript</option><option value="chat">Chat thread</option><option value="doc">Doc</option></select></label>
+              <label style={lbl}>Meeting date<input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={field} /></label>
+            </div>
+            <label style={lbl}>Name (becomes the source label)<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Monday standup" style={field} /></label>
+            <label style={lbl}>
+              <span style={{ display: 'flex', justifyContent: 'space-between' }}>Text<button onClick={() => { setText(SAMPLE); setTitle(title || 'Vendor sync'); }} style={{ background: 'none', border: 'none', color: '#2f6b4f', cursor: 'pointer', fontSize: 11.5, padding: 0 }}>Load sample transcript</button></span>
+              <textarea value={text} onChange={(e) => setText(e.target.value)} rows={11} placeholder="Paste here…" style={{ ...field, height: 'auto', padding: 10, lineHeight: 1.45, resize: 'vertical' }} />
+            </label>
+          </>
+        ) : (
+          <>
+            <p style={{ margin: 0, fontSize: 13, color: '#65706a', lineHeight: 1.45 }}>
+              Fix anything that looks wrong, untick what is not a real commitment, then plant them. Items with no owner become seeds waiting for one.
+              {note && <span style={{ display: 'block', marginTop: 6, color: '#9a620c' }}>{note}</span>}
+            </p>
+            <datalist id="ingest-people">{people.map((n) => <option key={n} value={n} />)}</datalist>
+            {drafts.length === 0 && <div style={{ fontSize: 13, color: '#8a948d', padding: '12px 0' }}>Nothing to track was found in this text.</div>}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {drafts.map((d, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '22px minmax(0,1fr)', gap: 10, padding: '12px 0', borderTop: '1px solid #efeee7', opacity: d.keep ? 1 : 0.45 }}>
+                  <input type="checkbox" checked={d.keep} onChange={(e) => set(i, { keep: e.target.checked })} aria-label={`Keep ${d.text}`} style={{ marginTop: 8, width: 16, height: 16, accentColor: '#2f6b4f' }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <select value={d.type} onChange={(e) => set(i, { type: e.target.value as Extracted['type'] })} aria-label="Type" style={{ ...small, width: 104 }}><option value="action">Action</option><option value="decision">Decision</option></select>
+                      <input value={d.text} onChange={(e) => set(i, { text: e.target.value })} aria-label="What" style={{ ...small, flex: 1, minWidth: 0 }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {d.type === 'action' && <input list="ingest-people" value={d.owner ?? ''} onChange={(e) => set(i, { owner: e.target.value || null })} placeholder="No owner (seed)" aria-label="Owner" style={{ ...small, width: 170 }} />}
+                      {d.type === 'action' && <input type="date" value={d.deadline ?? ''} onChange={(e) => set(i, { deadline: e.target.value || null })} aria-label="Due" style={{ ...small, width: 150 }} />}
+                      <input value={d.workstream ?? ''} onChange={(e) => set(i, { workstream: e.target.value || null })} placeholder="Workstream" aria-label="Workstream" style={{ ...small, width: 130 }} />
+                    </div>
+                    <span style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 14.5, color: '#65706a', lineHeight: 1.35 }}>“{d.source_excerpt}”</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
         {err && <div style={{ fontSize: 12.5, color: '#9c4529' }}>{err}</div>}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ height: 38, padding: '0 14px', borderRadius: 10, border: '1px solid #dcdad0', background: '#fff', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
-          <button className="hov-primary" disabled={busy || !text.trim() || !pid} onClick={submit} style={{ height: 38, padding: '0 18px', borderRadius: 10, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13, fontWeight: 500, cursor: busy ? 'wait' : 'pointer', opacity: busy || !text.trim() ? 0.6 : 1 }}>
-            {busy ? 'Reading…' : 'Extract commitments'}
-          </button>
+          <button onClick={drafts ? () => setDrafts(null) : onClose} style={{ height: 38, padding: '0 14px', borderRadius: 10, border: '1px solid #dcdad0', background: '#fff', cursor: 'pointer', fontSize: 13 }}>{drafts ? 'Back' : 'Cancel'}</button>
+          {drafts ? (
+            <button className="hov-primary" disabled={busy || kept === 0} onClick={plant} style={{ height: 38, padding: '0 18px', borderRadius: 10, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13, fontWeight: 500, cursor: busy ? 'wait' : 'pointer', opacity: busy || kept === 0 ? 0.6 : 1 }}>
+              {busy ? 'Planting…' : `Plant ${kept} on the tree`}
+            </button>
+          ) : (
+            <button className="hov-primary" disabled={busy || !text.trim() || !pid} onClick={extractNow} style={{ height: 38, padding: '0 18px', borderRadius: 10, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13, fontWeight: 500, cursor: busy ? 'wait' : 'pointer', opacity: busy || !text.trim() ? 0.6 : 1 }}>
+              {busy ? 'Reading…' : 'Extract commitments'}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -121,7 +192,7 @@ export function ListView({ items, sel, onSelect }: { items: VItem[]; sel: string
   );
 }
 
-export function SourcesView({ sources, items }: { sources: Source[]; items: VItem[] }) {
+export function SourcesView({ sources, items, onDelete }: { sources: Source[]; items: VItem[]; onDelete: (id: string) => Promise<void> }) {
   if (!sources.length) return <Empty text="No sources yet." />;
   return (
     <div style={{ flex: 1, minHeight: 0, overflow: 'auto', margin: '14px 0 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -130,6 +201,8 @@ export function SourcesView({ sources, items }: { sources: Source[]; items: VIte
           <summary style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: 12 }}>
             <span style={{ fontFamily: serif, fontSize: 20, color: '#16211b' }}>{s.title}</span>
             <span style={{ fontFamily: mono, fontSize: 10.5, color: '#8a948d' }}>{{ mtg: 'MEETING', chat: 'CHAT', doc: 'DOC' }[s.kind]} · {fmt(s.meeting_date)} · {items.filter((v) => v.it.source_id === s.id).length} items</span>
+            <button onClick={(e) => { e.preventDefault(); const n = items.filter((v) => v.it.source_id === s.id).length; if (window.confirm(`Delete "${s.title}" and the ${n} item${n === 1 ? '' : 's'} extracted from it?`)) void onDelete(s.id); }}
+              style={{ marginLeft: 'auto', background: 'none', border: '1px solid #efd3c6', borderRadius: 8, padding: '3px 10px', fontSize: 11.5, color: '#9c4529', cursor: 'pointer' }}>Delete</button>
           </summary>
           <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: 12.5, lineHeight: 1.5, color: '#4a554e', margin: '12px 0 0', maxHeight: 280, overflow: 'auto' }}>{s.text}</pre>
         </details>
@@ -138,14 +211,15 @@ export function SourcesView({ sources, items }: { sources: Source[]; items: VIte
   );
 }
 
-const EV_LABEL: Record<EventType, string> = { created: 'created', reassigned: 'reassigned', deadline_moved: 'deadline moved', edited: 'edited', done: 'marked done', reopened: 'reopened', overdue: 'went overdue', nudged: 'owner nudged' };
-const EV_COLOR: Record<EventType, string> = { created: C.root, reassigned: '#6b8fb5', deadline_moved: C.a, edited: '#8a948d', done: C.g, reopened: C.a, overdue: C.r, nudged: '#2f8a77' };
+const EV_LABEL: Record<EventType, string> = { created: 'created', reassigned: 'reassigned', deadline_moved: 'deadline moved', edited: 'edited', done: 'marked done', reopened: 'reopened', overdue: 'went overdue', nudged: 'owner nudged', mood_flagged: 'mood flagged' };
+const EV_COLOR: Record<EventType, string> = { created: C.root, reassigned: '#6b8fb5', deadline_moved: C.a, edited: '#8a948d', done: C.g, reopened: C.a, overdue: C.r, nudged: '#2f8a77', mood_flagged: '#6f7196' };
 
 function describe(e: CommitmentEvent) {
   const d = (x: string | null) => (x ? fmtShort(x) : 'no date');
   if (e.event_type === 'deadline_moved') return `${d(e.old_value)} → ${d(e.new_value)}`;
   if (e.event_type === 'reassigned') return `${e.old_value || 'unowned'} → ${e.new_value || 'unowned'}`;
   if (e.event_type === 'overdue') return `was due ${d(e.old_value)}`;
+  if (e.event_type === 'mood_flagged') return e.new_value ? `· sounded ${e.new_value}` : '· cleared';
   if (e.event_type === 'created') { try { const j = JSON.parse(e.new_value || '{}'); return `${j.owner || 'unowned'} · ${d(j.deadline)}`; } catch { return ''; } }
   return '';
 }

@@ -17,7 +17,7 @@ export function viewItems(s: AppState, projectId: string, asof: string): VItem[]
     const slips = slipCount(it.id, events);
     let was: string | undefined;
     if (slips) { try { const f = JSON.parse(events.find((e) => e.event_type === 'created')?.new_value || '{}').deadline; if (f && f !== it.deadline) was = fmt(f); } catch { /* ignore */ } }
-    return { it, d, owner: s.people.find((p) => p.id === it.owner_id)?.name ?? null, slips, risk: slipRisk(d, slips), due: it.deadline ? fmt(it.deadline) : 'No date', dueWas: was, events };
+    return { it, d, owner: s.people.find((p) => p.id === it.owner_id)?.name ?? null, slips, risk: slipRisk(d, slips, it.mood_flag), due: it.deadline ? fmt(it.deadline) : 'No date', dueWas: was, events };
   });
 }
 
@@ -55,7 +55,7 @@ export function layoutTree(vs: VItem[]) {
     const [k, t, side] = SLOTS[used[g]++];
     const limb = 'LEF'[g] + k;
     if (!LIMBS[limb]) continue;
-    leaves.push({ id: v.it.id, limb, t, side: side || undefined, ws: v.it.workstream, title: v.it.text, owner: v.owner!, due: v.due, state: v.d.state as 'g' | 'a' | 'r', stateLabel: v.d.label, risk: v.risk });
+    leaves.push({ id: v.it.id, limb, t, side: side || undefined, ws: v.it.workstream, title: v.it.text, owner: v.owner!, due: v.due, state: v.d.state as 'g' | 'a' | 'r', stateLabel: v.d.label, risk: v.risk, mood: v.it.mood_flag ?? undefined });
   }
   const fallen: FallenLeaf[] = vs.filter((v) => v.it.type === 'action' && v.d.state === 'd').slice(0, 14).map((v, i) => ({
     id: v.it.id, title: v.it.text, owner: v.owner || 'Unowned', x: 520 + (i % 9) * 46 + (Math.floor(i / 9) % 2) * 22, y: 800 + ((i * 37) % 26), rot: ((i * 67) % 300) - 150,

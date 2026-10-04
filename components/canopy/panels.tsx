@@ -120,10 +120,12 @@ const STEP: Record<EventType, { label: (o: string | null, n: string | null) => s
   done: { label: () => 'Done', color: C.g },
   reopened: { label: () => 'Reopened', color: C.a },
   nudged: { label: (_o, n) => (n ? `Nudged ${n.split(' ')[0]}` : 'Nudged'), color: '#2f8a77' },
+  mood_flagged: { label: (_o, n) => (n ? `Sounded ${n}` : 'Mood cleared'), color: '#6f7196' },
 };
 
-export function CommitmentPanel({ v, source, people, onClose, onPatch }: {
+export function CommitmentPanel({ v, source, people, onClose, onPatch, onDelete }: {
   v: VItem; source?: Source; people: Person[]; onClose: () => void; onPatch: (id: string, patch: Record<string, unknown>) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(v.it.text);
@@ -208,6 +210,15 @@ export function CommitmentPanel({ v, source, people, onClose, onPatch }: {
             <p style={{ margin: '14px 0 0', fontSize: 12.5, lineHeight: 1.5, color: '#65706a', textWrap: 'pretty' }}>
               {done ? 'Marked done. The leaf has bloomed and left the tree.' : v.slips ? `The deadline has moved ${v.slips} time${v.slips > 1 ? 's' : ''}${v.dueWas ? ` since ${v.dueWas}` : ''}. Each slip raises the risk.` : st === 'g' ? 'On track. No slips recorded.' : st === 'a' ? 'Due soon. Check in before it wilts.' : 'Past due. The longer it sits, the closer it is to falling.'}
             </p>
+            {v.it.mood_flag && !done && (
+              <div style={{ marginTop: 12, display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, background: '#f0f0f7', border: '1px solid #dedfee' }}>
+                <span style={{ width: 8, height: 8, marginTop: 5, flex: 'none', borderRadius: '50%', background: '#6f7196' }} />
+                <span style={{ flex: 1, fontSize: 12.5, lineHeight: 1.45, color: '#3d3f5c' }}>
+                  <b style={{ fontWeight: 600 }}>Shared from Mood Mirror:</b> {v.owner ? v.owner.split(' ')[0] : 'The owner'} flagged that they felt {v.it.mood_flag} when taking this on. Slip risk +15%.
+                </span>
+                <button onClick={() => onPatch(v.it.id, { mood: null })} style={{ background: 'none', border: 'none', padding: 0, fontSize: 11.5, color: '#6f7196', cursor: 'pointer', whiteSpace: 'nowrap' }}>Clear</button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -261,6 +272,8 @@ export function CommitmentPanel({ v, source, people, onClose, onPatch }: {
             </button>
           )}
           <button style={secondaryBtn} onClick={() => { setText(v.it.text); setOwner(v.owner || ''); setDeadline(v.it.deadline || ''); setEditing(true); }}>Edit owner / date</button>
+          <button onClick={() => { if (window.confirm(`Delete "${v.it.text}"? This removes it and its history.`)) void onDelete(v.it.id); }}
+            style={{ ...secondaryBtn, color: '#9c4529', borderColor: '#efd3c6' }}>Delete</button>
         </div>
       )}
     </section>
