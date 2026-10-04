@@ -25,9 +25,12 @@ export async function tigerInsert(evs: CommitmentEvent[]): Promise<void> {
   if (!tigerEnabled() || !evs.length) return;
   try {
     await init();
-    for (const e of evs) {
-      await pool!.query('INSERT INTO commitment_events VALUES ($1,$2,$3,$4,$5,$6)', [e.time, e.action_item_id, e.project_id, e.event_type, e.old_value, e.new_value]);
-    }
+    // One statement rather than one round trip per event: the database is in another region, so a
+    // seed or a bulk edit used to pay that latency dozens of times over.
+    const cols = 6;
+    const values = evs.map((_, i) => `($${i * cols + 1},$${i * cols + 2},$${i * cols + 3},$${i * cols + 4},$${i * cols + 5},$${i * cols + 6})`).join(',');
+    const args = evs.flatMap((e) => [e.time, e.action_item_id, e.project_id, e.event_type, e.old_value, e.new_value]);
+    await pool!.query(`INSERT INTO commitment_events VALUES ${values}`, args);
   } catch (err) { console.error('[tiger] insert failed', err); }
 }
 
