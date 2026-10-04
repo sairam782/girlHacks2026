@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { patchItem, type ItemPatch } from '@/lib/store';
+import { deleteItem, patchItem, type ItemPatch } from '@/lib/store';
 import { isDate } from '@/lib/dates';
 import { fail, readJson } from '@/lib/http';
 
@@ -17,4 +17,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (b.type === 'action') p.type = 'action';
   try { return NextResponse.json(await patchItem(id, p)); }
   catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 404 }); }
+}
+
+// Removes a commitment outright, with its history. Used to undo a bad extraction.
+export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+  return (await deleteItem(id))
+    ? NextResponse.json({ ok: true, id })
+    : NextResponse.json({ error: 'Unknown item' }, { status: 404 });
 }

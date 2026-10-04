@@ -42,3 +42,12 @@ export async function tigerHistory(projectId: string): Promise<CommitmentEvent[]
     return r.rows.map((x) => ({ ...x, time: new Date(x.time).toISOString() }));
   } catch (err) { console.error('[tiger] query failed', err); return null; }
 }
+
+/** Drops the history of items that no longer exist, so the hypertable does not keep orphans. */
+export async function tigerDeleteItems(itemIds: string[]): Promise<void> {
+  if (!tigerEnabled() || !itemIds.length) return;
+  try {
+    await init();
+    await pool!.query('DELETE FROM commitment_events WHERE action_item_id = ANY($1)', [itemIds]);
+  } catch (err) { console.error('[tiger] delete failed', err); }
+}

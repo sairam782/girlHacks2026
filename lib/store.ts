@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { todayISO, diffDays } from './dates';
-import { tigerHistory, tigerInsert } from './tiger';
+import { tigerDeleteItems, tigerHistory, tigerInsert } from './tiger';
 import type { ActionItem, AppState, CommitmentEvent, EventType, Extracted, Person, Project, Source, SourceKind } from './types';
 
 export const DATA_DIR = process.env.CANOPY_DATA_DIR || path.join(process.cwd(), '.data');
@@ -111,6 +111,33 @@ export function ingestItems(input: { projectId: string; title: string; kind: Sou
     }
     src.extracted = created.length;
     return { source: src, items: created, skipped };
+  });
+}
+
+/** Removes one commitment and its history. Returns false when the id is unknown. */
+export function deleteItem(id: string) {
+  return mutate(async (s) => {
+    const i = s.items.findIndex((x) => x.id === id);
+    if (i === -1) return false;
+    s.items.splice(i, 1);
+    s.events = s.events.filter((e) => e.action_item_id !== id);
+    await tigerDeleteItems([id]);
+    return true;
+  });
+}
+
+/** Undoes an ingest: the source and every commitment it produced, with their history. */
+export function deleteSource(id: string) {
+  return mutate(async (s) => {
+    const i = s.sources.findIndex((x) => x.id === id);
+    if (i === -1) return null;
+    const items = s.items.filter((x) => x.source_id === id);
+    const ids = new Set(items.map((x) => x.id));
+    s.sources.splice(i, 1);
+    s.items = s.items.filter((x) => !ids.has(x.id));
+    s.events = s.events.filter((e) => !ids.has(e.action_item_id));
+    await tigerDeleteItems([...ids]);
+    return { removed: items.length };
   });
 }
 
