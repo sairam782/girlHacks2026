@@ -207,14 +207,15 @@ async function toTiger() {
       time TIMESTAMPTZ NOT NULL, action_item_id TEXT NOT NULL, project_id TEXT NOT NULL,
       event_type TEXT NOT NULL, old_value TEXT, new_value TEXT)`);
     await pool.query(`SELECT create_hypertable('commitment_events', 'time', if_not_exists => TRUE)`);
-    const ids = state.projects.map((p) => p.id);
-    await pool.query('DELETE FROM commitment_events WHERE project_id = ANY($1)', [ids]);
+    // Seeding replaces the whole store, so clear the whole hypertable too. Deleting only this
+    // run's project ids left history behind from earlier runs, which no screen could ever show.
+    const { rowCount: cleared } = await pool.query('DELETE FROM commitment_events');
     // One statement, not one round trip per event.
     const values = state.events.map((_, i) => `($${i * 6 + 1},$${i * 6 + 2},$${i * 6 + 3},$${i * 6 + 4},$${i * 6 + 5},$${i * 6 + 6})`).join(',');
     const args = state.events.flatMap((e) => [e.time, e.action_item_id, e.project_id, e.event_type, e.old_value, e.new_value]);
     if (state.events.length) await pool.query(`INSERT INTO commitment_events VALUES ${values}`, args);
     const { rows } = await pool.query('SELECT count(*) c FROM commitment_events');
-    return `  Mirrored ${state.events.length} events to Tiger Data (${rows[0].c} rows total).`;
+    return `  Mirrored ${state.events.length} events to Tiger Data (cleared ${cleared} stale rows, ${rows[0].c} rows now).`;
   } catch (e) {
     return `  Tiger Data write failed (${e.message}); history stays in .data/store.json.`;
   } finally {
