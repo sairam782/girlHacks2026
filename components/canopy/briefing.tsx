@@ -21,11 +21,8 @@ function Marker({ kind }: { kind: BriefingItem['kind'] }) {
 
 // Daily spoken briefing. The script is built on the server from the person's real commitments;
 // audio comes from ElevenLabs via /api/briefing, and without a key it falls back to the browser's voice.
-// Last orb press this player has acted on; module-level so a remount does not replay or drop a press.
-let handledTick = 0;
-
-export function MorningBriefing({ dateLabel, items, personId, asof, playTick, onPlaying }: {
-  dateLabel: string; items: BriefingItem[]; personId: string | null; asof: string; playTick: number; onPlaying: (p: boolean) => void;
+export function MorningBriefing({ dateLabel, items, personId, asof, onPlaying }: {
+  dateLabel: string; items: BriefingItem[]; personId: string | null; asof: string; onPlaying: (p: boolean) => void;
 }) {
   const [script, setScript] = useState('');
   const [playing, setPlaying] = useState(false);
@@ -103,13 +100,7 @@ export function MorningBriefing({ dateLabel, items, personId, asof, playTick, on
     try { await audio.current!.play(); setPlaying(true); } catch { setPlaying(false); } // autoplay blocked: stay ready for a manual press
   };
 
-  const toggleRef = useRef(toggle);
-  toggleRef.current = toggle;
   useEffect(() => { onPlaying(playing); }, [playing, onPlaying]);
-  useEffect(() => {
-    if (playTick > handledTick) { handledTick = playTick; if (!playing) void toggleRef.current(); }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playTick]);
 
   const played = Math.round(progress * BARS.length);
 

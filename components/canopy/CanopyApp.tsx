@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AV, C, initials, type GroveProject } from './data';
 import { MorningBriefing, TalkButton, type BriefingItem } from './briefing';
+import { VoiceAgent } from './VoiceAgent';
 import { MoodCard } from './mood/MoodCard';
 import MoodMirror from './mood/MoodMirror';
 import { BranchNotes, CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
@@ -38,7 +39,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const [sel, setSel] = useState<string | null>(null);
   const [hover, setHover] = useState<string | null>(null);
   const [voice, setVoice] = useState(false); // true while the briefing is playing
-  const [playTick, setPlayTick] = useState(0);
+  const [agent, setAgent] = useState(false); // voice agent panel
   const [zoom, setZoom] = useState(1);
   const [ingest, setIngest] = useState(false);
   const [newProj, setNewProj] = useState(false);
@@ -102,17 +103,17 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const openCommitment = (id: string) => { const it = data?.items.find((i) => i.id === id); if (it) openLeaf(it.project_id, id); };
   const goGrove = () => { setScreen('grove'); setSel(null); };
   const openProject = (id: string) => { setPid(id); setScreen('tree'); setTab('tree'); setSel(null); };
-  const openVoice = useCallback(() => { if (!me) { setToast('Add a source first so Canopy knows who is on the team.'); return; } setSel(null); setPlayTick((t) => t + 1); }, [me]);
+  const openVoice = useCallback(() => { if (!me) { setToast('Add a source first so Canopy knows who is on the team.'); return; } setSel(null); setAgent(true); }, [me]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (/INPUT|TEXTAREA|SELECT/.test((e.target as HTMLElement | null)?.tagName ?? '')) return;
-      if (e.key === 'Escape') { if (sel) setSel(null); }
-      else if ((e.key === 'v' || e.key === 'V') && !e.metaKey && !e.ctrlKey) openVoice();
+      if (e.key === 'Escape') { if (agent) setAgent(false); else if (sel) setSel(null); }
+      else if ((e.key === 'v' || e.key === 'V') && !agent && !e.metaKey && !e.ctrlKey) openVoice();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [sel, openVoice]);
+  }, [sel, agent, openVoice]);
 
   const onHover = useCallback((id: string | null) => setHover(id), []);
   const onSelect = useCallback((id: string) => setSel(id), []);
@@ -376,7 +377,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             <CommitmentPanel key={selected.it.id + selected.events.length} v={selected} source={data.sources.find((s) => s.id === selected.it.source_id)} people={data.people} onClose={() => setSel(null)} onPatch={patch} />
           ) : (
             <>
-              <MorningBriefing dateLabel={fmt(asof)} items={briefingItems} personId={me?.id ?? null} asof={asof} playTick={playTick} onPlaying={setVoice} />
+              <MorningBriefing dateLabel={fmt(asof)} items={briefingItems} personId={me?.id ?? null} asof={asof} onPlaying={setVoice} />
               <MoodCard onOpen={goMood} />
               <UnownedDecisions seeds={seeds} people={data.people} onPlant={(id, owner) => patch(id, { owner, type: 'action' })} />
               <BranchNotes decisions={decisions} sources={data.sources} />
@@ -387,8 +388,10 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
         </aside>
       )}
 
-      {/* Starts the briefing card's player. Hidden while it plays, and while a commitment is open so it does not cover the action buttons. */}
-      {!voice && !selected && !isMood && <TalkButton onClick={openVoice} />}
+      {/* Opens the voice agent. Hidden while it is open, and while a commitment is open so it does not cover the action buttons. */}
+      {!agent && !selected && !isMood && <TalkButton onClick={openVoice} />}
+
+      {agent && me && <VoiceAgent personId={me.id} personName={me.name} asof={asof} onChanged={refresh} onClose={() => setAgent(false)} />}
 
       {ingest && data.projects.length > 0 && (
         <IngestModal projects={data.projects} projectId={pid} onClose={() => setIngest(false)}
