@@ -221,7 +221,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   return (
     <div style={{ position: 'fixed', inset: 0, display: 'flex', background: '#f3f2ec', color: '#1d2620', fontFamily: "'Geist', system-ui, sans-serif" }}>
       {mid && (
-        <aside style={{ width: 212, flex: 'none', display: 'flex', flexDirection: 'column', gap: 22, padding: '20px 14px 16px', borderRight: '1px solid #e4e2d9', background: '#f8f7f2', boxSizing: 'border-box', overflowY: 'auto' }}>
+        <aside style={{ width: 212, flex: 'none', display: 'flex', flexDirection: 'column', borderRight: '1px solid #e4e2d9', background: '#f8f7f2', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14, padding: '20px 14px 10px' }}>
           <div style={{ padding: '0 8px' }}>
             <button onClick={goGrove} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <span style={{ width: 20, height: 20, borderRadius: '2px 100% 2px 100%', background: 'linear-gradient(135deg, #7cc58f, #2f6b4f)' }} />
@@ -249,7 +250,6 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
               </button>
             ))}
           </div>
-          <div style={{ flex: 1 }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 10, borderRadius: 12, border: '1px dashed #d8d6cc' }}>
             <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9aa29c' }}>Time travel</div>
             <div style={{ fontSize: 12, color: '#4a554e' }}>{fmt(asof)}{offset ? ` (${offset > 0 ? '+' : ''}${offset}d)` : ' · today'}</div>
@@ -260,16 +260,21 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             <div style={{ fontSize: 11, color: '#8a948d', lineHeight: 1.35 }}>Jump ahead to watch leaves yellow and wilt.</div>
             <button onClick={resetDemo} style={{ height: 26, borderRadius: 7, border: '1px solid #e4e2d9', background: 'none', fontSize: 11.5, color: '#7a857e', cursor: 'pointer' }}>Reset demo data</button>
           </div>
-          {viewAsRow}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 8px', fontSize: 11.5, color: '#7a857e' }}>
+          </div>
+
+          <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', gap: 10, padding: '10px 14px 14px', borderTop: '1px solid #ecebe3' }}>
+            {viewAsRow}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 10px', padding: '0 8px', fontSize: 11, color: '#7a857e' }}>
             {([['Gemini', data.engines.gemini, 'extraction'], ['ElevenLabs', data.engines.elevenlabs, 'voice'], ['Tiger Data', data.engines.tiger, 'history']] as const).map(([n, on, role]) => (
-              <span key={n} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: on ? '#4f9d69' : '#c9c7bb', boxShadow: on ? '0 0 0 3px rgba(79,157,105,0.18)' : undefined }} />
-                {n} <span style={{ color: '#a9afa9' }}>{on ? role : 'fallback'}</span>
+              <span key={n} title={on ? `${n}: ${role}` : `${n}: no key set, using the built-in fallback`}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', flex: 'none', background: on ? '#4f9d69' : '#c9c7bb', boxShadow: on ? '0 0 0 2.5px rgba(79,157,105,0.18)' : undefined }} />
+                {n}{!on && <span style={{ color: '#a9afa9' }}>fallback</span>}
               </span>
             ))}
           </div>
-          <button className="hov-primary" onClick={() => setNewProj(true)} style={{ height: 40, borderRadius: 11, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13.5, fontWeight: 500, cursor: 'pointer' }}>+ New project</button>
+            <button className="hov-primary" onClick={() => setNewProj(true)} style={{ flex: 'none', height: 38, borderRadius: 11, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13.5, fontWeight: 500, cursor: 'pointer' }}>+ New project</button>
+          </div>
         </aside>
       )}
 
