@@ -1,0 +1,30 @@
+{
+  "title": "Q4 Vendor Migration · Monday standup",
+  "turns": [
+    {"speaker": "Marcus L.", "start": 0.0, "end": 8.0, "text": "Morning everyone. Quick one on the Q4 vendor migration. The pilot numbers came back and they look great, so I'm glad we pushed it."},
+    {"speaker": "Priya S.", "start": 8.3, "end": 16.5, "text": "Thanks Marcus. Before we go further, we need to get the vendor quote to Legal this week, because Dana's redline is blocked until it lands and"},
+    {"speaker": "Marcus L.", "start": 16.1, "end": 22.0, "text": "Right, right, let's park that for now. Sam, where are we on the cutover runbook?"},
+    {"speaker": "Sam R.", "start": 22.4, "end": 32.0, "text": "Honestly I'm worried. There are still twelve open items on it and the freeze is Friday. I'm not sure we can test the whole cutover in time."},
+    {"speaker": "Jordan M.", "start": 32.3, "end": 39.0, "text": "Wait, sorry, which deadline are we on? I thought the freeze was next Friday. I'm a little lost on the timeline."},
+    {"speaker": "Marcus L.", "start": 39.4, "end": 45.0, "text": "It's this Friday. That was decided at the Tuesday sync."},
+    {"speaker": "Jordan M.", "start": 45.3, "end": 52.0, "text": "Okay. I don't follow how the security review fits in then. Do I run it before or after the freeze?"},
+    {"speaker": "Marcus L.", "start": 52.4, "end": 58.0, "text": "Let's take that offline. Priya, you had something?"},
+    {"speaker": "Priya S.", "start": 58.3, "end": 70.0, "text": "Yes. Like I said earlier, the vendor quote has to reach Legal before Dana can redline the MSA. I've raised this twice now and it keeps getting pushed. It's frustrating."},
+    {"speaker": "Marcus L.", "start": 70.4, "end": 78.0, "text": "Fair. Okay, I love that, let's do it. Great call, Priya."},
+    {"speaker": "Sam R.", "start": 78.3, "end": 87.0, "text": "I'm nervous about adding more to this week though. If the quote moves up, the sandbox work gets even tighter. What if we miss something on the legacy data export?"},
+    {"speaker": "Priya S.", "start": 87.4, "end": 95.0, "text": "I'm confident it's small. I already have the pricing, it's one spreadsheet. I'll send the vendor quote by Wednesday."},
+    {"speaker": "Marcus L.", "start": 95.4, "end": 102.0, "text": "This is unacceptable, by the way, the data processing addendum is still open from last sprint. Who dropped that?"},
+    {"speaker": "Jordan M.", "start": 102.3, "end": 109.0, "text": "I think that was mine? I'm not sure what we agreed the scope was, the ticket was unclear."},
+    {"speaker": "Sam R.", "start": 109.4, "end": 117.0, "text": "I'm a bit disappointed we cut the accessibility pass from the cutover. That was the part I was most proud of."},
+    {"speaker": "Marcus L.", "start": 117.3, "end": 124.0, "text": "We'll come back to accessibility next sprint. Let's keep moving."},
+    {"speaker": "Priya S.", "start": 124.4, "end": 131.0, "text": "Can we get an owner on the addendum before we leave?"},
+    {"speaker": "Marcus L.", "start": 131.3, "end": 138.0, "text": "Moving on. Sam, how is the runbook looking?"},
+    {"speaker": "Sam R.", "start": 138.4, "end": 146.0, "text": "I'll have a cutover runbook draft by Friday. The new endpoints are about thirty percent faster, so it's going well."},
+    {"speaker": "Marcus L.", "start": 146.3, "end": 152.0, "text": "Awesome, that's fantastic."},
+    {"speaker": "Sam R.", "start": 152.4, "end": 161.0, "text": "I'm still anxious about Friday. Could we at least agree a code freeze Thursday at noon?"},
+    {"speaker": "Marcus L.", "start": 161.3, "end": 166.0, "text": "Sure, Thursday noon freeze."},
+    {"speaker": "Lena O.", "start": 166.4, "end": 173.0, "text": "Great. Then I'll have the purchase order ready the moment Legal signs."},
+    {"speaker": "Jordan M.", "start": 173.3, "end": 179.0, "text": "Thank you, that actually helps. I feel better about the security review now."},
+    {"speaker": "Marcus L.", "start": 179.4, "end": 185.0, "text": "Perfect. Good standup, everyone."}
+  ]
+}

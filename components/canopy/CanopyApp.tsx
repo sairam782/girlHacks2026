@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AV, C, initials, type GroveProject } from './data';
 import { MorningBriefing, TalkButton, type BriefingItem } from './briefing';
+import { MoodCard } from './mood/MoodCard';
+import MoodMirror from './mood/MoodMirror';
 import { BranchNotes, CommitmentPanel, FollowThrough, UnownedDecisions } from './panels';
 import { CanvasBg, GroveTree, ProjectTree } from './trees';
 import { IngestModal, ListView, NewProjectModal, SourcesView, TimelineView } from './views';
@@ -19,7 +21,7 @@ export interface CanopyAppProps {
   leafLabels?: 'at-risk' | 'all' | 'none';
 }
 
-type Screen = 'grove' | 'tree';
+type Screen = 'grove' | 'tree' | 'mood';
 type Tab = 'tree' | 'list' | 'sources' | 'timeline';
 type Data = AppState & { today: string; engines: { gemini: boolean; elevenlabs: boolean; tiger: boolean } };
 
@@ -96,6 +98,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   }, [perProject, me, asof]);
 
   const openLeaf = useCallback((projectId: string, id: string | null) => { setPid(projectId); setScreen('tree'); setTab('tree'); setSel(id); }, []);
+  const goMood = () => { setScreen('mood'); setSel(null); };
+  const openCommitment = (id: string) => { const it = data?.items.find((i) => i.id === id); if (it) openLeaf(it.project_id, id); };
   const goGrove = () => { setScreen('grove'); setSel(null); };
   const openProject = (id: string) => { setPid(id); setScreen('tree'); setTab('tree'); setSel(null); };
   const openVoice = useCallback(() => { if (!me) { setToast('Add a source first so Canopy knows who is on the team.'); return; } setSel(null); setPlayTick((t) => t + 1); }, [me]);
@@ -131,13 +135,14 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   if (!data) return <div style={{ padding: 40, fontFamily: 'system-ui', color: '#9c4529' }}>Canopy could not reach its API: {loadErr}</div>;
 
   const isTree = screen === 'tree' && !!project;
+  const isMood = screen === 'mood';
   const selected = isTree && sel ? vs.find((v) => v.it.id === sel) ?? null : null;
   const seeds = vs.filter(isSeed);
   const decisions = vs.filter((v) => v.it.type === 'decision' && v.owner && v.it.status === 'open');
   const allSeeds = perProject.reduce((n, x) => n + x.vs.filter(isSeed).length, 0);
   const totals = perProject.reduce((a, x) => ({ g: a.g + x.h.g, a: a.a + x.h.a, r: a.r + x.h.r, d: a.d + x.h.d, open: a.open + x.h.open }), { g: 0, a: 0, r: 0, d: 0, open: 0 });
   const mid = vw >= 1180, wide = vw >= 1320;
-  const railShow = vw >= 1000 || !!selected;
+  const railShow = !isMood && (vw >= 1000 || !!selected);
   const stats = followThrough(data, asof).map((s, i) => {
     const ratio = s.kept / s.total;
     return { name: s.name, init: initials(s.name), bg: AV[i % AV.length], ratio: `${s.kept}/${s.total}`, pct: Math.round(ratio * 100) + '%', bar: ratio >= 0.8 ? '#4f9d69' : ratio >= 0.6 ? '#9cbf5a' : '#e3a33b' };
@@ -148,6 +153,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
     ...(owe.length > 3 ? [{ text: `${owe.length - 3} more this week`, kind: 'soon' as const }] : []),
     { text: allSeeds === 0 ? 'Every decision has an owner' : `${allSeeds} decision${allSeeds === 1 ? '' : 's'} still need${allSeeds === 1 ? 's' : ''} an owner`, kind: 'seed', go: firstSeed ? () => openLeaf(firstSeed.p.id, null) : undefined },
   ];
+  const allLeaves = perProject.flatMap((x) => layoutTree(x.vs).leaves);
   const highlight = new Set(voice ? owe.filter((o) => o.p.id === pid).map((o) => o.v.it.id) : []);
   const grove: GroveProject[] = perProject.map(({ p, h }, i) => ({ id: p.id, name: p.name, health: h.health, seed: 5 + (hash(p.id) % 40), h: 345, foliage: 20 + Math.min(120, h.open * 6), slot: i % 3 }));
   const owners = [...new Set(vs.filter((v) => v.owner && v.d.state !== 'x').map((v) => v.owner!))];
@@ -156,9 +162,10 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const statLabel = (s: string) => <span style={{ fontSize: 12.5, color: '#7a857e' }}>{s}</span>;
   const plainBtn = { display: 'flex', alignItems: 'baseline', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' } as const;
   const nav: [string, string | number, (() => void) | undefined, boolean][] = [
-    ['The Grove', data.projects.length, goGrove, !isTree],
+    ['The Grove', data.projects.length, goGrove, screen === 'grove'],
     ['Add a source', '', data.projects.length ? () => setIngest(true) : () => setNewProj(true), false],
     ['Sources', data.sources.length, project ? () => { setTab('sources'); setScreen('tree'); } : undefined, false],
+    ['Mood Mirror', '', goMood, isMood],
     ['People', data.people.length, undefined, false],
   ];
   const selectStyle = { height: 30, borderRadius: 8, border: '1px solid #e4e2d9', background: '#fff', fontSize: 12.5, color: '#2b3630', padding: '0 6px', fontFamily: 'inherit' } as const;
@@ -246,7 +253,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
           </div>
         </header>
 
-        {!isTree && (
+        {screen === 'grove' && (
           <div data-screen-label="01 The Grove" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '4px 24px 20px', gap: 16 }}>
             <div>
               <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8a948d' }}>The Grove · {fmtLong(asof)}</div>
@@ -292,6 +299,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             </div>
           </div>
         )}
+
+        {isMood && <MoodMirror leaves={allLeaves} motes={motes} onBack={goGrove} onOpenCommitment={openCommitment} />}
 
         {isTree && project && cur && (
           <div data-screen-label="02 Tree view" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '0 24px 20px' }}>
@@ -368,6 +377,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
           ) : (
             <>
               <MorningBriefing dateLabel={fmt(asof)} items={briefingItems} personId={me?.id ?? null} asof={asof} playTick={playTick} onPlaying={setVoice} />
+              <MoodCard onOpen={goMood} />
               <UnownedDecisions seeds={seeds} people={data.people} onPlant={(id, owner) => patch(id, { owner, type: 'action' })} />
               <BranchNotes decisions={decisions} sources={data.sources} />
               <FollowThrough people={stats} />
@@ -378,7 +388,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
       )}
 
       {/* Starts the briefing card's player. Hidden while it plays, and while a commitment is open so it does not cover the action buttons. */}
-      {!voice && !selected && <TalkButton onClick={openVoice} />}
+      {!voice && !selected && !isMood && <TalkButton onClick={openVoice} />}
 
       {ingest && data.projects.length > 0 && (
         <IngestModal projects={data.projects} projectId={pid} onClose={() => setIngest(false)}

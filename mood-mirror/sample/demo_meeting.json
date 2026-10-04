@@ -1,0 +1,155 @@
+{
+ "title": "Sprint check-in (demo)",
+ "turns": [
+  {
+   "speaker": "Mark",
+   "start": 0.0,
+   "end": 7.5,
+   "text": "Okay everyone, great work last week, the beta numbers look really good. I'm honestly thrilled with how the launch went."
+  },
+  {
+   "speaker": "Priya",
+   "start": 7.8,
+   "end": 15.0,
+   "text": "Thanks Mark. I think we should move the onboarding survey earlier, because users drop off right after sign-up and"
+  },
+  {
+   "speaker": "Mark",
+   "start": 14.6,
+   "end": 21.0,
+   "text": "Right, right, let's park that. Sam, where are we on the release checklist?"
+  },
+  {
+   "speaker": "Sam",
+   "start": 21.4,
+   "end": 31.0,
+   "text": "Honestly I'm worried. We still have twelve open bugs and the deadline is Friday. I'm not sure we can test everything in time."
+  },
+  {
+   "speaker": "Jordan",
+   "start": 31.3,
+   "end": 37.0,
+   "text": "Wait, sorry, which deadline? I thought the release was next Friday. I'm a little lost on the timeline."
+  },
+  {
+   "speaker": "Mark",
+   "start": 37.4,
+   "end": 43.0,
+   "text": "It's this Friday. That was decided last Tuesday."
+  },
+  {
+   "speaker": "Jordan",
+   "start": 43.3,
+   "end": 49.0,
+   "text": "Okay. I don't follow how the hotfix branch fits in then. Are we merging it before or after the freeze?"
+  },
+  {
+   "speaker": "Mark",
+   "start": 49.4,
+   "end": 55.0,
+   "text": "Let's take that offline. Priya, you had something?"
+  },
+  {
+   "speaker": "Priya",
+   "start": 55.3,
+   "end": 66.0,
+   "text": "Yes. Like I said earlier, the onboarding survey should come right after sign-up. I've raised this twice now and it keeps getting pushed. It's frustrating."
+  },
+  {
+   "speaker": "Mark",
+   "start": 66.4,
+   "end": 74.0,
+   "text": "Fair. Okay, I love that idea actually, let's do it. Great call."
+  },
+  {
+   "speaker": "Sam",
+   "start": 74.3,
+   "end": 83.0,
+   "text": "I'm nervous about adding scope though. If we add the survey, QA gets even tighter. What if we miss critical bugs?"
+  },
+  {
+   "speaker": "Priya",
+   "start": 83.4,
+   "end": 91.0,
+   "text": "I'm confident it's small. I already have the designs ready and it's one screen. I can own it end to end."
+  },
+  {
+   "speaker": "Mark",
+   "start": 91.4,
+   "end": 98.0,
+   "text": "This is unacceptable, by the way, the payment bug from last sprint is still open. Who dropped that?"
+  },
+  {
+   "speaker": "Jordan",
+   "start": 98.3,
+   "end": 104.0,
+   "text": "I think that was mine? I'm not sure what the expected behaviour was, the ticket was unclear."
+  },
+  {
+   "speaker": "Sam",
+   "start": 104.4,
+   "end": 112.0,
+   "text": "I'm a bit disappointed we cut the accessibility pass. That was the part I was most proud of."
+  },
+  {
+   "speaker": "Mark",
+   "start": 112.3,
+   "end": 119.0,
+   "text": "Okay, we'll revisit accessibility next sprint. Let's keep moving."
+  },
+  {
+   "speaker": "Priya",
+   "start": 119.4,
+   "end": 126.0,
+   "text": "Can we get a decision on who owns the payment bug before we leave?"
+  },
+  {
+   "speaker": "Mark",
+   "start": 126.3,
+   "end": 133.0,
+   "text": "Moving on. Jordan, how's the API migration?"
+  },
+  {
+   "speaker": "Jordan",
+   "start": 133.4,
+   "end": 141.0,
+   "text": "It's going well, I'm happy with it. The new endpoints are about thirty percent faster."
+  },
+  {
+   "speaker": "Mark",
+   "start": 141.3,
+   "end": 148.0,
+   "text": "Awesome, that's fantastic news."
+  },
+  {
+   "speaker": "Sam",
+   "start": 148.4,
+   "end": 156.0,
+   "text": "I'm still anxious about Friday. Could we at least agree on a code freeze Thursday noon?"
+  },
+  {
+   "speaker": "Mark",
+   "start": 156.3,
+   "end": 160.0,
+   "text": "Sure, Thursday noon freeze."
+  },
+  {
+   "speaker": "Priya",
+   "start": 160.4,
+   "end": 167.0,
+   "text": "Great. I'll have the survey merged by Wednesday so QA has a full day."
+  },
+  {
+   "speaker": "Sam",
+   "start": 167.3,
+   "end": 173.0,
+   "text": "Okay, sure, that works for me."
+  },
+  {
+   "speaker": "Mark",
+   "start": 173.4,
+   "end": 180.0,
+   "text": "Perfect. Good meeting everyone."
+  }
+ ]
+}

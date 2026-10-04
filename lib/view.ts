@@ -55,7 +55,7 @@ export function layoutTree(vs: VItem[]) {
     const [k, t, side] = SLOTS[used[g]++];
     const limb = 'LEF'[g] + k;
     if (!LIMBS[limb]) continue;
-    leaves.push({ id: v.it.id, limb, t, side: side || undefined, title: v.it.text, owner: v.owner!, due: v.due, state: v.d.state as 'g' | 'a' | 'r', stateLabel: v.d.label, risk: v.risk });
+    leaves.push({ id: v.it.id, limb, t, side: side || undefined, ws: v.it.workstream, title: v.it.text, owner: v.owner!, due: v.due, state: v.d.state as 'g' | 'a' | 'r', stateLabel: v.d.label, risk: v.risk });
   }
   const fallen: FallenLeaf[] = vs.filter((v) => v.it.type === 'action' && v.d.state === 'd').slice(0, 14).map((v, i) => ({
     id: v.it.id, title: v.it.text, owner: v.owner || 'Unowned', x: 520 + (i % 9) * 46 + (Math.floor(i / 9) % 2) * 22, y: 800 + ((i * 37) % 26), rot: ((i * 67) % 300) - 150,
