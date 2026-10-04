@@ -108,6 +108,8 @@ npm run dev                  # http://localhost:3000
 
 Every key is optional. Without them, extraction and the voice agent use built-in rules, speech uses the browser's own voice, history is kept in a local JSON file, and Mood Mirror labels tone with an offline lexicon.
 
+To see it at full strength, click **Load demo data** on the empty Grove. That loads three projects, 11 people, and about 100 history events. See `demo-data/README.md`.
+
 | Variable | What it turns on |
 | --- | --- |
 | `GEMINI_API_KEY` | Gemini extraction and voice-agent understanding (`GEMINI_MODEL` defaults to `gemini-2.5-flash`) |

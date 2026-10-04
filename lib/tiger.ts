@@ -25,10 +25,26 @@ export async function tigerInsert(evs: CommitmentEvent[]): Promise<void> {
   if (!tigerEnabled() || !evs.length) return;
   try {
     await init();
-    for (const e of evs) {
-      await pool!.query('INSERT INTO commitment_events VALUES ($1,$2,$3,$4,$5,$6)', [e.time, e.action_item_id, e.project_id, e.event_type, e.old_value, e.new_value]);
+    // One multi-row INSERT per chunk keeps big batches (the demo seed) fast.
+    for (let i = 0; i < evs.length; i += 200) {
+      const chunk = evs.slice(i, i + 200);
+      const params: (string | null)[] = [];
+      const rows = chunk.map((e, k) => {
+        params.push(e.time, e.action_item_id, e.project_id, e.event_type, e.old_value, e.new_value);
+        return `($${k * 6 + 1},$${k * 6 + 2},$${k * 6 + 3},$${k * 6 + 4},$${k * 6 + 5},$${k * 6 + 6})`;
+      });
+      await pool!.query(`INSERT INTO commitment_events VALUES ${rows.join(',')}`, params);
     }
   } catch (err) { console.error('[tiger] insert failed', err); }
+}
+
+// Removes the events of the given projects, so re-loading the demo does not duplicate its history.
+export async function tigerDeleteProjects(projectIds: string[]): Promise<void> {
+  if (!tigerEnabled() || !projectIds.length) return;
+  try {
+    await init();
+    await pool!.query('DELETE FROM commitment_events WHERE project_id = ANY($1)', [projectIds]);
+  } catch (err) { console.error('[tiger] delete failed', err); }
 }
 
 export async function tigerHistory(projectId: string): Promise<CommitmentEvent[] | null> {

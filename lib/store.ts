@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { todayISO, diffDays } from './dates';
-import { tigerHistory, tigerInsert } from './tiger';
+import { tigerDeleteProjects, tigerHistory, tigerInsert } from './tiger';
 import type { ActionItem, AppState, CommitmentEvent, EventType, Extracted, Person, Project, Source, SourceKind } from './types';
 
 export const DATA_DIR = process.env.CANOPY_DATA_DIR || path.join(process.cwd(), '.data');
@@ -116,3 +116,16 @@ export function patchItem(id: string, p: ItemPatch) {
     return it;
   });
 }
+
+// Replaces everything with a prepared dataset (the demo). Refuses to overwrite existing data unless forced.
+export function loadDemoState(demo: AppState, force: boolean) {
+  return mutate(async (s, log) => {
+    if (!force && s.projects.length) throw new Error('There is already data. Reset it first to load the demo.');
+    await tigerDeleteProjects(demo.projects.map((p) => p.id));
+    s.projects = demo.projects; s.people = demo.people; s.sources = demo.sources; s.items = demo.items; s.events = [];
+    for (const e of demo.events) log(e);
+    return { projects: demo.projects.length, items: demo.items.length, events: demo.events.length };
+  });
+}
+
+export const isEmptyStore = async () => { await queue; return (await read()).projects.length === 0; };

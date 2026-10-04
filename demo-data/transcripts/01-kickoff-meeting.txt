@@ -1,0 +1,14 @@
+Customer Portal Redesign · Kickoff
+Rosa: Okay, let's get started. The portal is slow and support tickets keep telling us the navigation is confusing.
+Rosa: Decision: we are rebuilding the navigation first, and the dashboard second.
+Kwame: I'll audit the top 20 support tickets by Friday and bring the themes to the next meeting.
+Rosa: Mei, can you put together three navigation prototypes by next Wednesday?
+Mei: Yes, I'll have three prototypes ready next Wednesday.
+Kwame: Do we know who owns the analytics events? We can't measure anything without them.
+Rosa: Good question. Nobody yet. Someone needs to own the analytics tracking plan.
+Imani: I can look at accessibility. I'll run the screen reader audit before the end of the month.
+Rosa: Great. Jonas, please book the usability sessions for the first week of November.
+Jonas: Will do. I'll send the invites tomorrow.
+Rosa: We also agreed to freeze new features on the old portal until the redesign ships.
+Mei: One thing, I'm not sure the Wednesday date is realistic if we wait on brand assets.
+Rosa: Let's see how it goes. We'll revisit it on Monday.

@@ -47,6 +47,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const [viewer, setViewer] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
   const [toast, setToast] = useState('');
+  const [confirmReset, setConfirmReset] = useState(false);
   const [hist, setHist] = useState<(History & { events: CommitmentEvent[] }) | null>(null);
 
   const refresh = useCallback(async () => {
@@ -126,6 +127,17 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
     if (!r.ok) setToast((await r.json()).error || 'Could not save');
     await refresh();
   }, [refresh]);
+
+  const loadDemo = async (force: boolean) => {
+    const r = await fetch('/api/demo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ force }) });
+    const j = await r.json();
+    setConfirmReset(false);
+    if (!r.ok) { setToast(j.error || 'Could not load the demo'); return; }
+    setViewer(null); setPid(null); setScreen('grove'); setSel(null); setOffset(0);
+    safe(() => localStorage.removeItem('canopy.viewer'));
+    await refresh();
+    setToast(`Demo loaded: ${j.projects} projects, ${j.people} people, ${j.items} commitments, ${j.events} history events.`);
+  };
 
   const createProject = async (name: string) => {
     const r = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
@@ -223,6 +235,9 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
               </span>
             ))}
           </div>
+          <button onClick={() => (confirmReset ? loadDemo(true) : setConfirmReset(true))} onBlur={() => setConfirmReset(false)} style={{ background: 'none', border: 'none', padding: '0 8px', textAlign: 'left', fontSize: 11.5, color: confirmReset ? '#9c4529' : '#7a857e', cursor: 'pointer' }}>
+            {confirmReset ? 'Click again: replaces all current data' : 'Reset to demo data'}
+          </button>
           <button className="hov-primary" onClick={() => setNewProj(true)} style={{ height: 40, borderRadius: 11, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13.5, fontWeight: 500, cursor: 'pointer' }}>+ New project</button>
         </aside>
       )}
@@ -270,7 +285,10 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, textAlign: 'center', padding: 24 }}>
                   <div style={{ fontFamily: serif, fontSize: 34, color: '#16211b' }}>No trees yet</div>
                   <div style={{ fontSize: 14, color: '#65706a', maxWidth: 420, lineHeight: 1.5 }}>Create a project, then paste a transcript, chat thread, or doc. Every decision, owner, and deadline becomes a leaf.</div>
-                  <button className="hov-primary" onClick={() => setNewProj(true)} style={{ height: 42, padding: '0 20px', borderRadius: 12, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>Plant your first project</button>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <button className="hov-primary" onClick={() => setNewProj(true)} style={{ height: 42, padding: '0 20px', borderRadius: 12, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>Plant your first project</button>
+                    <button onClick={() => loadDemo(false)} style={{ height: 42, padding: '0 20px', borderRadius: 12, border: '1px solid #cfd6cf', background: '#fff', color: '#2b3630', fontSize: 14, cursor: 'pointer' }}>Load demo data</button>
+                  </div>
                 </div>
               ) : (
                 <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: `repeat(${Math.min(grove.length, 3)}, minmax(0,1fr))`, gridAutoRows: 'minmax(0,1fr)', gap: 16, padding: '20px 24px', overflowY: 'auto' }}>

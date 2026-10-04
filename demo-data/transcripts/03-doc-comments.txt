@@ -1,0 +1,6 @@
+Portal Redesign Brief · comments
+Rosa (comment on Goals): Success metric is time-to-first-task under 30 seconds. Needs a baseline measurement before we start. Kwame, can you pull it by the 14th?
+Imani (comment on Accessibility): All new components must pass keyboard navigation checks. I'll add a checklist to the design system by October 16.
+Mei (comment on Prototypes): Waiting on final brand assets from Marketing, no date yet.
+Jonas (comment on Research plan): The consent form still needs Legal sign-off. Will follow up.
+Rosa (comment on Timeline): Launch target is the first week of December. Decision: we do not launch during the holiday freeze.

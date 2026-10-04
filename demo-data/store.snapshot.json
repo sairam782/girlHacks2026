@@ -1,0 +1,1986 @@
+{
+  "projects": [
+    {
+      "id": "demo-q4",
+      "name": "Q4 Vendor Migration",
+      "created_at": "2026-09-11T13:00:00.000Z"
+    },
+    {
+      "id": "demo-onb",
+      "name": "Onboarding Revamp",
+      "created_at": "2026-08-26T13:00:00.000Z"
+    },
+    {
+      "id": "demo-pay",
+      "name": "Payroll API Launch",
+      "created_at": "2026-09-03T13:00:00.000Z"
+    }
+  ],
+  "people": [
+    {
+      "id": "p-jordan",
+      "name": "Jordan M.",
+      "email": "jordan.m@northwind.example"
+    },
+    {
+      "id": "p-priya",
+      "name": "Priya S.",
+      "email": "priya.s@northwind.example"
+    },
+    {
+      "id": "p-marcus",
+      "name": "Marcus L.",
+      "email": "marcus.l@northwind.example"
+    },
+    {
+      "id": "p-dana",
+      "name": "Dana K.",
+      "email": "dana.k@northwind.example"
+    },
+    {
+      "id": "p-sam",
+      "name": "Sam R.",
+      "email": "sam.r@northwind.example"
+    },
+    {
+      "id": "p-aiko",
+      "name": "Aiko T.",
+      "email": "aiko.t@northwind.example"
+    },
+    {
+      "id": "p-lena",
+      "name": "Lena O.",
+      "email": "lena.o@northwind.example"
+    },
+    {
+      "id": "p-ravi",
+      "name": "Ravi P.",
+      "email": "ravi.p@northwind.example"
+    },
+    {
+      "id": "p-chloe",
+      "name": "Chloe B.",
+      "email": "chloe.b@northwind.example"
+    },
+    {
+      "id": "p-tomas",
+      "name": "Tomás A.",
+      "email": "tomas.a@northwind.example"
+    },
+    {
+      "id": "p-nia",
+      "name": "Nia O.",
+      "email": "nia.o@northwind.example"
+    }
+  ],
+  "sources": [
+    {
+      "id": "demo-q4-s1",
+      "project_id": "demo-q4",
+      "kind": "mtg",
+      "title": "Kickoff · Vendor migration",
+      "meeting_date": "2026-09-14",
+      "text": "Dana: Thanks all. The goal is a clean cutover to Vendor A before the end of the quarter.\nDana: Decision: we go with Vendor A as the primary vendor.\nPriya: I'll send the vendor quote to Legal by Wednesday.\nDana: Marcus, can you finish the data processing addendum by next Friday?\nMarcus: Yes, I'll have the DPA review done by then.\nDana: I'll schedule the vendor legal call by Friday.\nDana: I'll redline the MSA with Vendor A by October 14.\nSam: I'll draft the cutover runbook by the end of next week.\nSam: Aiko, can you run the SSO integration spike by October 15?\nAiko: Sure, October 15 works.\nJordan: I'll finish the security review of Vendor A by next Monday.\nSam: I'll provision sandbox access by Wednesday.\nJordan: I'll share the access list with Marcus by Monday.\nLena: I'll get the PO raised for Vendor A by Monday the twelfth.\nJordan: I'll sign off the budget by Friday so Priya can move.\nLena: And I'll update the Q4 forecast by October 16.\nDana: Someone needs to tell the current vendor we are not renewing.\nDana: We still have no owner for the post-cutover support rota.",
+      "created_at": "2026-09-14T13:30:00.000Z",
+      "extracted": 15
+    },
+    {
+      "id": "demo-q4-s2",
+      "project_id": "demo-q4",
+      "kind": "mtg",
+      "title": "Monday standup",
+      "meeting_date": "2026-09-30",
+      "text": "Marcus: Morning everyone. Pilot numbers came back and they look great.\nPriya: Before we go on, Legal's redline is blocked until the quote lands.\nSam: Runbook is slipping to tomorrow, I'm waiting on sandbox access to the new region.\nAiko: I'll load test the new endpoints by October 20.\nDana: We agreed to freeze the legacy API after cutover.\nLena: I'll set up the invoice schedule by October 23.\nRavi: I can take the compliance checklist for Vendor A, due Monday.\nDana: Ravi, please also send the legal sign-off summary to Priya by Thursday.\nChloe: I'll prepare the vendor onboarding deck for the all-hands by October 9.\nTomás: I'll set up the data export from the legacy system by October 16.\nNia: I'll write the customer notice about the migration window by Tuesday.",
+      "created_at": "2026-09-30T13:30:00.000Z",
+      "extracted": 8
+    },
+    {
+      "id": "demo-q4-s3",
+      "project_id": "demo-q4",
+      "kind": "chat",
+      "title": "#vendor-migration thread",
+      "meeting_date": "2026-10-02",
+      "text": "Lena: Any update on the budget sign-off? Priya is waiting.\nJordan: Still reviewing, will have it by end of day tomorrow.\nSam: Spun up the sandbox region. Runbook moving to Wednesday.\nPriya: Quote needs one more number from finance. I'll get it to Legal Friday.\nDana: Thanks. Also, we decided the cutover window is the weekend of October 17.\nMarcus: DPA is blocked on the sub-processor section. Will send tomorrow.\nAiko: SSO spike: starting today.",
+      "created_at": "2026-10-02T13:30:00.000Z",
+      "extracted": 1
+    },
+    {
+      "id": "demo-q4-s4",
+      "project_id": "demo-q4",
+      "kind": "doc",
+      "title": "Vendor Migration Plan · comments",
+      "meeting_date": "2026-10-04",
+      "text": "Dana: Comment on section 4: Legal needs the vendor's security questionnaire before signing.\nLena: Comment on the forecast table: please add the migration one-off costs.\nSam: Runbook draft v2 attached. Needs a review from Security.",
+      "created_at": "2026-10-04T13:30:00.000Z",
+      "extracted": 3
+    },
+    {
+      "id": "demo-onb-s1",
+      "project_id": "demo-onb",
+      "kind": "mtg",
+      "title": "Kickoff · Onboarding",
+      "meeting_date": "2026-09-05",
+      "text": "Nia: Goal: new hires productive in two weeks instead of five.\nNia: Decision: we run a pilot with the January cohort first.\nDana: I'll approve the pilot budget by Friday.\nChloe: I'll write the week one welcome email sequence by the 20th.\nTomás: I'll set up the laptop provisioning checklist by the 18th.\nLena: I'll map each role to a budget line for equipment by the end of the month.\nRavi: I'll draft the manager checklist for day one.\nPriya: I'll write the product one-pager by October 1.\nPriya: I'll record the product overview videos by October 20.",
+      "created_at": "2026-09-05T13:30:00.000Z",
+      "extracted": 8
+    },
+    {
+      "id": "demo-onb-s2",
+      "project_id": "demo-onb",
+      "kind": "mtg",
+      "title": "Design review",
+      "meeting_date": "2026-09-23",
+      "text": "Chloe: The buddy program needs an owner before the pilot.\nTomás: I'll build the access request form in the HR portal by October 9.\nAiko: I'll set up the sandbox accounts for new engineers by next Friday.\nNia: Priya, can you review the video scripts by Monday?\nDana: Legal needs to approve the offer-letter wording by October 14.\nNia: We agreed to keep the day-one agenda to three sessions.\nChloe: I'll create the FAQ page for new hires by the 28th.",
+      "created_at": "2026-09-23T13:30:00.000Z",
+      "extracted": 7
+    },
+    {
+      "id": "demo-onb-s3",
+      "project_id": "demo-onb",
+      "kind": "chat",
+      "title": "#onboarding thread",
+      "meeting_date": "2026-09-29",
+      "text": "Tomás: Laptop shipping vendor can do next-day for the January cohort.\nJordan: I'll review the security training module by October 8.\nRavi: Someone should confirm the pilot cohort size with Finance.\nNia: Feedback survey draft is done, sending Friday.\nSam: I'll add the onboarding checklist to the wiki by Wednesday.",
+      "created_at": "2026-09-29T13:30:00.000Z",
+      "extracted": 3
+    },
+    {
+      "id": "demo-pay-s1",
+      "project_id": "demo-pay",
+      "kind": "mtg",
+      "title": "Kickoff · Payroll API",
+      "meeting_date": "2026-09-09",
+      "text": "Ravi: Target launch is November 2. Decision: we ship the v1 API without bonus runs.\nAiko: I'll finish the tax withholding endpoint by October 2.\nAiko: I'll publish the OpenAPI spec by the 18th.\nSam: I'll own the idempotency keys design.\nMarcus: I'll gather last year's audit findings by the 20th.\nMarcus: I'll get the compliance sign-off for state tax tables by October 16.\nDana: I'll review the data retention policy with Legal by October 9.\nJordan: I'll complete the vendor risk assessment template by the 22nd.\nChloe: I'll write the QA test plan by next Friday.\nTomás: I'll set up the load test environment by October 5.\nLena: I'll confirm the payroll provider rate card by the 25th.",
+      "created_at": "2026-09-09T13:30:00.000Z",
+      "extracted": 11
+    },
+    {
+      "id": "demo-pay-s2",
+      "project_id": "demo-pay",
+      "kind": "mtg",
+      "title": "Weekly sync",
+      "meeting_date": "2026-09-27",
+      "text": "Ravi: Decision: we use signed webhooks, not polling, for pay run status.\nAiko: I'll implement the webhook retry logic by October 14.\nSam: I'll write the reconciliation job by October 12.\nChloe: I'll run the first regression pass on staging by Monday.\nMarcus: I'll get the SOC 2 evidence pack to the auditors by the 15th.\nPriya: I'll write the customer-facing API docs by October 13.\nDana: Someone should own the incident runbook for payroll failures.\nNia: I'll coordinate the pilot with two customers by October 20.",
+      "created_at": "2026-09-27T13:30:00.000Z",
+      "extracted": 8
+    },
+    {
+      "id": "demo-pay-s3",
+      "project_id": "demo-pay",
+      "kind": "chat",
+      "title": "#payroll-launch thread",
+      "meeting_date": "2026-10-03",
+      "text": "Ravi: Heads up, the provider sandbox is down for maintenance until tomorrow.\nTomás: Load test environment is up, running the first baseline.\nMarcus: State tax tables for New York are still missing from the provider.\nLena: I'll chase the provider about the New York tax tables today.",
+      "created_at": "2026-10-03T13:30:00.000Z",
+      "extracted": 1
+    },
+    {
+      "id": "demo-pay-s4",
+      "project_id": "demo-pay",
+      "kind": "doc",
+      "title": "Launch readiness checklist · comments",
+      "meeting_date": "2026-10-01",
+      "text": "Dana: Open item: the penetration test report must be attached before launch.\nAiko: Rate limiting is not defined for the bulk endpoints.",
+      "created_at": "2026-10-01T13:30:00.000Z",
+      "extracted": 2
+    }
+  ],
+  "items": [
+    {
+      "id": "demo-q4-i01",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-dana",
+      "type": "decision",
+      "text": "Go with Vendor A as the primary vendor",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Dana: Decision: we go with Vendor A as the primary vendor.",
+      "workstream": "Legal",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i02",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-priya",
+      "type": "action",
+      "text": "Send the vendor quote to Legal",
+      "deadline": "2026-10-11",
+      "status": "open",
+      "source_excerpt": "Priya: I'll send the vendor quote to Legal by Wednesday.",
+      "workstream": "Legal",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i03",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-marcus",
+      "type": "action",
+      "text": "Finish the data processing addendum",
+      "deadline": "2026-10-01",
+      "status": "open",
+      "source_excerpt": "Dana: Marcus, can you finish the data processing addendum by next Friday?",
+      "workstream": "Legal",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i04",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-dana",
+      "type": "action",
+      "text": "Schedule the vendor legal call",
+      "deadline": "2026-09-18",
+      "status": "done",
+      "source_excerpt": "Dana: I'll schedule the vendor legal call by Friday.",
+      "workstream": "Legal",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": "2026-09-17T20:00:00.000Z"
+    },
+    {
+      "id": "demo-q4-i05",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-dana",
+      "type": "action",
+      "text": "Redline the MSA with Vendor A",
+      "deadline": "2026-10-16",
+      "status": "open",
+      "source_excerpt": "Dana: I'll redline the MSA with Vendor A by October 14.",
+      "workstream": "Legal",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i06",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-sam",
+      "type": "action",
+      "text": "Draft the cutover runbook",
+      "deadline": "2026-10-04",
+      "status": "open",
+      "source_excerpt": "Sam: I'll draft the cutover runbook by the end of next week.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i07",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-aiko",
+      "type": "action",
+      "text": "Run the SSO integration spike",
+      "deadline": "2026-10-17",
+      "status": "open",
+      "source_excerpt": "Sam: Aiko, can you run the SSO integration spike by October 15?",
+      "workstream": "Engineering",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i08",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-jordan",
+      "type": "action",
+      "text": "Finish the security review of Vendor A",
+      "deadline": "2026-10-08",
+      "status": "open",
+      "source_excerpt": "Jordan: I'll finish the security review of Vendor A by next Monday.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i09",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-sam",
+      "type": "action",
+      "text": "Provision sandbox access",
+      "deadline": "2026-09-16",
+      "status": "done",
+      "source_excerpt": "Sam: I'll provision sandbox access by Wednesday.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": "2026-09-15T20:00:00.000Z"
+    },
+    {
+      "id": "demo-q4-i10",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-jordan",
+      "type": "action",
+      "text": "Share the access list with Marcus",
+      "deadline": "2026-09-18",
+      "status": "done",
+      "source_excerpt": "Jordan: I'll share the access list with Marcus by Monday.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": "2026-09-20T20:00:00.000Z"
+    },
+    {
+      "id": "demo-q4-i11",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-lena",
+      "type": "action",
+      "text": "Raise the PO for Vendor A",
+      "deadline": "2026-10-14",
+      "status": "open",
+      "source_excerpt": "Lena: I'll get the PO raised for Vendor A by Monday the twelfth.",
+      "workstream": "Finance",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i12",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-jordan",
+      "type": "action",
+      "text": "Sign off the budget",
+      "deadline": "2026-10-03",
+      "status": "open",
+      "source_excerpt": "Jordan: I'll sign off the budget by Friday so Priya can move.",
+      "workstream": "Finance",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i13",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": "p-lena",
+      "type": "action",
+      "text": "Update the Q4 forecast",
+      "deadline": "2026-10-18",
+      "status": "open",
+      "source_excerpt": "Lena: And I'll update the Q4 forecast by October 16.",
+      "workstream": "Finance",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i14",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": null,
+      "type": "action",
+      "text": "Tell the current vendor we are not renewing",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Dana: Someone needs to tell the current vendor we are not renewing.",
+      "workstream": "Finance",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i15",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s1",
+      "owner_id": null,
+      "type": "action",
+      "text": "Own the post-cutover support rota",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Dana: We still have no owner for the post-cutover support rota.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-14T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i16",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-aiko",
+      "type": "action",
+      "text": "Load test the new endpoints",
+      "deadline": "2026-10-22",
+      "status": "open",
+      "source_excerpt": "Aiko: I'll load test the new endpoints by October 20.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i17",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-dana",
+      "type": "decision",
+      "text": "Freeze the legacy API after cutover",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Dana: We agreed to freeze the legacy API after cutover.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i18",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-lena",
+      "type": "action",
+      "text": "Set up the invoice schedule",
+      "deadline": "2026-10-25",
+      "status": "open",
+      "source_excerpt": "Lena: I'll set up the invoice schedule by October 23.",
+      "workstream": "Finance",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i19",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-ravi",
+      "type": "action",
+      "text": "Complete the Vendor A compliance checklist",
+      "deadline": "2026-10-07",
+      "status": "open",
+      "source_excerpt": "Ravi: I can take the compliance checklist for Vendor A, due Monday.",
+      "workstream": "Legal",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i20",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-chloe",
+      "type": "action",
+      "text": "Send the legal sign-off summary to Priya",
+      "deadline": "2026-10-09",
+      "status": "open",
+      "source_excerpt": "Dana: Ravi, please also send the legal sign-off summary to Priya by Thursday.",
+      "workstream": "Legal",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i21",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-chloe",
+      "type": "action",
+      "text": "Prepare the vendor onboarding deck",
+      "deadline": "2026-10-11",
+      "status": "open",
+      "source_excerpt": "Chloe: I'll prepare the vendor onboarding deck for the all-hands by October 9.",
+      "workstream": "Finance",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i22",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-tomas",
+      "type": "action",
+      "text": "Set up the legacy data export",
+      "deadline": "2026-10-18",
+      "status": "open",
+      "source_excerpt": "Tomás: I'll set up the data export from the legacy system by October 16.",
+      "workstream": "Engineering",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i23",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s2",
+      "owner_id": "p-nia",
+      "type": "action",
+      "text": "Write the customer notice about the migration window",
+      "deadline": "2026-10-02",
+      "status": "done",
+      "source_excerpt": "Nia: I'll write the customer notice about the migration window by Tuesday.",
+      "workstream": "Legal",
+      "created_at": "2026-09-30T13:00:00.000Z",
+      "done_at": "2026-10-04T20:00:00.000Z"
+    },
+    {
+      "id": "demo-q4-i24",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s3",
+      "owner_id": "p-dana",
+      "type": "decision",
+      "text": "Cutover window is the weekend of October 17",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Dana: Thanks. Also, we decided the cutover window is the weekend of October 17.",
+      "workstream": "Engineering",
+      "created_at": "2026-10-02T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i25",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s4",
+      "owner_id": "p-ravi",
+      "type": "action",
+      "text": "Collect the vendor security questionnaire",
+      "deadline": "2026-10-08",
+      "status": "open",
+      "source_excerpt": "Dana: Comment on section 4: Legal needs the vendor's security questionnaire before signing.",
+      "workstream": "Legal",
+      "created_at": "2026-10-04T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i26",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s4",
+      "owner_id": "p-lena",
+      "type": "action",
+      "text": "Add migration one-off costs to the forecast",
+      "deadline": "2026-10-10",
+      "status": "open",
+      "source_excerpt": "Lena: Comment on the forecast table: please add the migration one-off costs.",
+      "workstream": "Finance",
+      "created_at": "2026-10-04T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-q4-i27",
+      "project_id": "demo-q4",
+      "source_id": "demo-q4-s4",
+      "owner_id": "p-jordan",
+      "type": "action",
+      "text": "Review runbook v2 with Security",
+      "deadline": "2026-10-10",
+      "status": "open",
+      "source_excerpt": "Sam: Runbook draft v2 attached. Needs a review from Security.",
+      "workstream": "Engineering",
+      "created_at": "2026-10-04T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i01",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-nia",
+      "type": "decision",
+      "text": "Run a pilot with the January cohort first",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Nia: Decision: we run a pilot with the January cohort first.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i02",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-dana",
+      "type": "action",
+      "text": "Approve the pilot budget",
+      "deadline": "2026-09-13",
+      "status": "done",
+      "source_excerpt": "Dana: I'll approve the pilot budget by Friday.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": "2026-09-12T20:00:00.000Z"
+    },
+    {
+      "id": "demo-onb-i03",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-chloe",
+      "type": "action",
+      "text": "Write the week one welcome emails",
+      "deadline": "2026-09-23",
+      "status": "done",
+      "source_excerpt": "Chloe: I'll write the week one welcome email sequence by the 20th.",
+      "workstream": "Content",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": "2026-09-21T20:00:00.000Z"
+    },
+    {
+      "id": "demo-onb-i04",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-tomas",
+      "type": "action",
+      "text": "Set up the laptop provisioning checklist",
+      "deadline": "2026-09-20",
+      "status": "done",
+      "source_excerpt": "Tomás: I'll set up the laptop provisioning checklist by the 18th.",
+      "workstream": "Tooling",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": "2026-09-19T20:00:00.000Z"
+    },
+    {
+      "id": "demo-onb-i05",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-lena",
+      "type": "action",
+      "text": "Map each role to an equipment budget line",
+      "deadline": "2026-10-02",
+      "status": "done",
+      "source_excerpt": "Lena: I'll map each role to a budget line for equipment by the end of the month.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": "2026-09-30T20:00:00.000Z"
+    },
+    {
+      "id": "demo-onb-i06",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-ravi",
+      "type": "action",
+      "text": "Draft the manager checklist for day one",
+      "deadline": "2026-09-26",
+      "status": "done",
+      "source_excerpt": "Ravi: I'll draft the manager checklist for day one.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": "2026-09-26T20:00:00.000Z"
+    },
+    {
+      "id": "demo-onb-i07",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-priya",
+      "type": "action",
+      "text": "Write the product one-pager",
+      "deadline": "2026-10-01",
+      "status": "done",
+      "source_excerpt": "Priya: I'll write the product one-pager by October 1.",
+      "workstream": "Content",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": "2026-09-30T20:00:00.000Z"
+    },
+    {
+      "id": "demo-onb-i08",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s1",
+      "owner_id": "p-priya",
+      "type": "action",
+      "text": "Record the product overview videos",
+      "deadline": "2026-10-22",
+      "status": "open",
+      "source_excerpt": "Priya: I'll record the product overview videos by October 20.",
+      "workstream": "Content",
+      "created_at": "2026-09-05T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i09",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s2",
+      "owner_id": null,
+      "type": "action",
+      "text": "Own the buddy program",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Chloe: The buddy program needs an owner before the pilot.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-23T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i10",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s2",
+      "owner_id": "p-tomas",
+      "type": "action",
+      "text": "Build the access request form in the HR portal",
+      "deadline": "2026-10-11",
+      "status": "open",
+      "source_excerpt": "Tomás: I'll build the access request form in the HR portal by October 9.",
+      "workstream": "Tooling",
+      "created_at": "2026-09-23T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i11",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s2",
+      "owner_id": "p-aiko",
+      "type": "action",
+      "text": "Set up sandbox accounts for new engineers",
+      "deadline": "2026-10-07",
+      "status": "open",
+      "source_excerpt": "Aiko: I'll set up the sandbox accounts for new engineers by next Friday.",
+      "workstream": "Tooling",
+      "created_at": "2026-09-23T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i12",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s2",
+      "owner_id": "p-priya",
+      "type": "action",
+      "text": "Review the video scripts",
+      "deadline": "2026-10-10",
+      "status": "open",
+      "source_excerpt": "Nia: Priya, can you review the video scripts by Monday?",
+      "workstream": "Content",
+      "created_at": "2026-09-23T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i13",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s2",
+      "owner_id": "p-dana",
+      "type": "action",
+      "text": "Approve the offer-letter wording",
+      "deadline": "2026-10-16",
+      "status": "open",
+      "source_excerpt": "Dana: Legal needs to approve the offer-letter wording by October 14.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-23T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i14",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s2",
+      "owner_id": "p-nia",
+      "type": "decision",
+      "text": "Keep the day-one agenda to three sessions",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Nia: We agreed to keep the day-one agenda to three sessions.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-23T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i15",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s2",
+      "owner_id": "p-chloe",
+      "type": "action",
+      "text": "Create the FAQ page for new hires",
+      "deadline": "2026-09-29",
+      "status": "done",
+      "source_excerpt": "Chloe: I'll create the FAQ page for new hires by the 28th.",
+      "workstream": "Content",
+      "created_at": "2026-09-23T13:00:00.000Z",
+      "done_at": "2026-09-28T20:00:00.000Z"
+    },
+    {
+      "id": "demo-onb-i16",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s3",
+      "owner_id": "p-jordan",
+      "type": "action",
+      "text": "Review the security training module",
+      "deadline": "2026-10-10",
+      "status": "open",
+      "source_excerpt": "Jordan: I'll review the security training module by October 8.",
+      "workstream": "Tooling",
+      "created_at": "2026-09-29T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i17",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s3",
+      "owner_id": null,
+      "type": "action",
+      "text": "Confirm the pilot cohort size with Finance",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Ravi: Someone should confirm the pilot cohort size with Finance.",
+      "workstream": "People Ops",
+      "created_at": "2026-09-29T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-onb-i18",
+      "project_id": "demo-onb",
+      "source_id": "demo-onb-s3",
+      "owner_id": "p-sam",
+      "type": "action",
+      "text": "Add the onboarding checklist to the wiki",
+      "deadline": "2026-10-03",
+      "status": "done",
+      "source_excerpt": "Sam: I'll add the onboarding checklist to the wiki by Wednesday.",
+      "workstream": "Tooling",
+      "created_at": "2026-09-29T13:00:00.000Z",
+      "done_at": "2026-10-05T20:00:00.000Z"
+    },
+    {
+      "id": "demo-pay-i01",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-ravi",
+      "type": "decision",
+      "text": "Ship the v1 API without bonus runs",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Ravi: Target launch is November 2. Decision: we ship the v1 API without bonus runs.",
+      "workstream": "Backend",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i02",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-aiko",
+      "type": "action",
+      "text": "Finish the tax withholding endpoint",
+      "deadline": "2026-10-04",
+      "status": "open",
+      "source_excerpt": "Aiko: I'll finish the tax withholding endpoint by October 2.",
+      "workstream": "Backend",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i03",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-aiko",
+      "type": "action",
+      "text": "Publish the OpenAPI spec",
+      "deadline": "2026-09-21",
+      "status": "done",
+      "source_excerpt": "Aiko: I'll publish the OpenAPI spec by the 18th.",
+      "workstream": "Backend",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": "2026-09-20T20:00:00.000Z"
+    },
+    {
+      "id": "demo-pay-i04",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-sam",
+      "type": "action",
+      "text": "Design idempotency keys",
+      "deadline": "2026-09-17",
+      "status": "done",
+      "source_excerpt": "Sam: I'll own the idempotency keys design.",
+      "workstream": "Backend",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": "2026-09-16T20:00:00.000Z"
+    },
+    {
+      "id": "demo-pay-i05",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-marcus",
+      "type": "action",
+      "text": "Gather last year's audit findings",
+      "deadline": "2026-09-26",
+      "status": "done",
+      "source_excerpt": "Marcus: I'll gather last year's audit findings by the 20th.",
+      "workstream": "Compliance",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": "2026-09-25T20:00:00.000Z"
+    },
+    {
+      "id": "demo-pay-i06",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-marcus",
+      "type": "action",
+      "text": "Get compliance sign-off for state tax tables",
+      "deadline": "2026-10-18",
+      "status": "open",
+      "source_excerpt": "Marcus: I'll get the compliance sign-off for state tax tables by October 16.",
+      "workstream": "Compliance",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i07",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-dana",
+      "type": "action",
+      "text": "Review the data retention policy with Legal",
+      "deadline": "2026-10-11",
+      "status": "open",
+      "source_excerpt": "Dana: I'll review the data retention policy with Legal by October 9.",
+      "workstream": "Compliance",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i08",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-jordan",
+      "type": "action",
+      "text": "Complete the vendor risk assessment template",
+      "deadline": "2026-09-24",
+      "status": "done",
+      "source_excerpt": "Jordan: I'll complete the vendor risk assessment template by the 22nd.",
+      "workstream": "Compliance",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": "2026-09-24T20:00:00.000Z"
+    },
+    {
+      "id": "demo-pay-i09",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-chloe",
+      "type": "action",
+      "text": "Write the QA test plan",
+      "deadline": "2026-09-23",
+      "status": "done",
+      "source_excerpt": "Chloe: I'll write the QA test plan by next Friday.",
+      "workstream": "QA",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": "2026-09-23T20:00:00.000Z"
+    },
+    {
+      "id": "demo-pay-i10",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-tomas",
+      "type": "action",
+      "text": "Set up the load test environment",
+      "deadline": "2026-10-07",
+      "status": "open",
+      "source_excerpt": "Tomás: I'll set up the load test environment by October 5.",
+      "workstream": "QA",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i11",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s1",
+      "owner_id": "p-lena",
+      "type": "action",
+      "text": "Confirm the payroll provider rate card",
+      "deadline": "2026-09-27",
+      "status": "done",
+      "source_excerpt": "Lena: I'll confirm the payroll provider rate card by the 25th.",
+      "workstream": "Compliance",
+      "created_at": "2026-09-09T13:00:00.000Z",
+      "done_at": "2026-09-29T20:00:00.000Z"
+    },
+    {
+      "id": "demo-pay-i12",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": "p-ravi",
+      "type": "decision",
+      "text": "Use signed webhooks, not polling, for pay run status",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Ravi: Decision: we use signed webhooks, not polling, for pay run status.",
+      "workstream": "Backend",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i13",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": "p-aiko",
+      "type": "action",
+      "text": "Implement the webhook retry logic",
+      "deadline": "2026-10-16",
+      "status": "open",
+      "source_excerpt": "Aiko: I'll implement the webhook retry logic by October 14.",
+      "workstream": "Backend",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i14",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": "p-sam",
+      "type": "action",
+      "text": "Write the reconciliation job",
+      "deadline": "2026-10-14",
+      "status": "open",
+      "source_excerpt": "Sam: I'll write the reconciliation job by October 12.",
+      "workstream": "Backend",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i15",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": "p-chloe",
+      "type": "action",
+      "text": "Run the first regression pass on staging",
+      "deadline": "2026-10-02",
+      "status": "open",
+      "source_excerpt": "Chloe: I'll run the first regression pass on staging by Monday.",
+      "workstream": "QA",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i16",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": "p-marcus",
+      "type": "action",
+      "text": "Send the SOC 2 evidence pack to the auditors",
+      "deadline": "2026-10-17",
+      "status": "open",
+      "source_excerpt": "Marcus: I'll get the SOC 2 evidence pack to the auditors by the 15th.",
+      "workstream": "Compliance",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i17",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": "p-priya",
+      "type": "action",
+      "text": "Write the customer-facing API docs",
+      "deadline": "2026-10-15",
+      "status": "open",
+      "source_excerpt": "Priya: I'll write the customer-facing API docs by October 13.",
+      "workstream": "Backend",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i18",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": null,
+      "type": "action",
+      "text": "Own the incident runbook for payroll failures",
+      "deadline": null,
+      "status": "open",
+      "source_excerpt": "Dana: Someone should own the incident runbook for payroll failures.",
+      "workstream": "Compliance",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i19",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s2",
+      "owner_id": "p-nia",
+      "type": "action",
+      "text": "Coordinate the pilot with two customers",
+      "deadline": "2026-10-22",
+      "status": "open",
+      "source_excerpt": "Nia: I'll coordinate the pilot with two customers by October 20.",
+      "workstream": "QA",
+      "created_at": "2026-09-27T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i20",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s3",
+      "owner_id": "p-lena",
+      "type": "action",
+      "text": "Chase the provider about the New York tax tables",
+      "deadline": "2026-10-05",
+      "status": "open",
+      "source_excerpt": "Lena: I'll chase the provider about the New York tax tables today.",
+      "workstream": "Compliance",
+      "created_at": "2026-10-03T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i21",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s4",
+      "owner_id": "p-jordan",
+      "type": "action",
+      "text": "Book the external penetration test",
+      "deadline": "2026-10-10",
+      "status": "open",
+      "source_excerpt": "Dana: Open item: the penetration test report must be attached before launch.",
+      "workstream": "Compliance",
+      "created_at": "2026-10-01T13:00:00.000Z",
+      "done_at": null
+    },
+    {
+      "id": "demo-pay-i22",
+      "project_id": "demo-pay",
+      "source_id": "demo-pay-s4",
+      "owner_id": "p-sam",
+      "type": "action",
+      "text": "Define rate limits for the bulk endpoints",
+      "deadline": "2026-10-13",
+      "status": "open",
+      "source_excerpt": "Aiko: Rate limiting is not defined for the bulk endpoints.",
+      "workstream": "Backend",
+      "created_at": "2026-10-01T13:00:00.000Z",
+      "done_at": null
+    }
+  ],
+  "events": [
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i01",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Nia O.\",\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i02",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":\"2026-09-13\"}"
+    },
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i03",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Chloe B.\",\"deadline\":\"2026-09-23\"}"
+    },
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i04",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Tomás A.\",\"deadline\":\"2026-09-20\"}"
+    },
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i05",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Lena O.\",\"deadline\":\"2026-10-02\"}"
+    },
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i06",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Ravi P.\",\"deadline\":\"2026-09-26\"}"
+    },
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i07",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Priya S.\",\"deadline\":\"2026-10-01\"}"
+    },
+    {
+      "time": "2026-09-05T13:00:00.000Z",
+      "action_item_id": "demo-onb-i08",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Priya S.\",\"deadline\":\"2026-10-22\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i01",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Ravi P.\",\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i02",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Aiko T.\",\"deadline\":\"2026-09-27\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i03",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Aiko T.\",\"deadline\":\"2026-09-21\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i04",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Sam R.\",\"deadline\":\"2026-09-17\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i05",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Marcus L.\",\"deadline\":\"2026-09-26\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i06",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Marcus L.\",\"deadline\":\"2026-10-18\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i07",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":\"2026-10-11\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i08",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Jordan M.\",\"deadline\":\"2026-09-24\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i09",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Chloe B.\",\"deadline\":\"2026-09-23\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i10",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Tomás A.\",\"deadline\":\"2026-10-07\"}"
+    },
+    {
+      "time": "2026-09-09T13:00:00.000Z",
+      "action_item_id": "demo-pay-i11",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Lena O.\",\"deadline\":\"2026-09-27\"}"
+    },
+    {
+      "time": "2026-09-12T20:00:00.000Z",
+      "action_item_id": "demo-onb-i02",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i01",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i02",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Priya S.\",\"deadline\":\"2026-09-16\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i03",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Marcus L.\",\"deadline\":\"2026-09-21\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i04",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":\"2026-09-18\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i05",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":\"2026-10-16\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i06",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Sam R.\",\"deadline\":\"2026-09-26\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i07",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Aiko T.\",\"deadline\":\"2026-10-17\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i08",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Jordan M.\",\"deadline\":\"2026-09-23\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i09",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Sam R.\",\"deadline\":\"2026-09-16\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i10",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Jordan M.\",\"deadline\":\"2026-09-18\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i11",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Lena O.\",\"deadline\":\"2026-10-14\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i12",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Jordan M.\",\"deadline\":\"2026-09-21\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i13",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Lena O.\",\"deadline\":\"2026-10-18\"}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i14",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":null,\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-14T13:00:00.000Z",
+      "action_item_id": "demo-q4-i15",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":null,\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-15T20:00:00.000Z",
+      "action_item_id": "demo-q4-i09",
+      "project_id": "demo-q4",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-16T14:30:00.000Z",
+      "action_item_id": "demo-q4-i02",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-16",
+      "new_value": "2026-09-27"
+    },
+    {
+      "time": "2026-09-16T20:00:00.000Z",
+      "action_item_id": "demo-pay-i04",
+      "project_id": "demo-pay",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-17T20:00:00.000Z",
+      "action_item_id": "demo-q4-i04",
+      "project_id": "demo-q4",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-19T03:59:59.000Z",
+      "action_item_id": "demo-q4-i10",
+      "project_id": "demo-q4",
+      "event_type": "overdue",
+      "old_value": "2026-09-18",
+      "new_value": "2026-09-19"
+    },
+    {
+      "time": "2026-09-19T20:00:00.000Z",
+      "action_item_id": "demo-onb-i04",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-20T20:00:00.000Z",
+      "action_item_id": "demo-q4-i10",
+      "project_id": "demo-q4",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-20T20:00:00.000Z",
+      "action_item_id": "demo-pay-i03",
+      "project_id": "demo-pay",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-21T14:30:00.000Z",
+      "action_item_id": "demo-q4-i03",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-21",
+      "new_value": "2026-10-01"
+    },
+    {
+      "time": "2026-09-21T14:30:00.000Z",
+      "action_item_id": "demo-q4-i12",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-21",
+      "new_value": "2026-10-03"
+    },
+    {
+      "time": "2026-09-21T20:00:00.000Z",
+      "action_item_id": "demo-onb-i03",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-23T13:00:00.000Z",
+      "action_item_id": "demo-onb-i09",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":null,\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-23T13:00:00.000Z",
+      "action_item_id": "demo-onb-i10",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Tomás A.\",\"deadline\":\"2026-10-11\"}"
+    },
+    {
+      "time": "2026-09-23T13:00:00.000Z",
+      "action_item_id": "demo-onb-i11",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Aiko T.\",\"deadline\":\"2026-09-30\"}"
+    },
+    {
+      "time": "2026-09-23T13:00:00.000Z",
+      "action_item_id": "demo-onb-i12",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Priya S.\",\"deadline\":\"2026-10-10\"}"
+    },
+    {
+      "time": "2026-09-23T13:00:00.000Z",
+      "action_item_id": "demo-onb-i13",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":\"2026-10-16\"}"
+    },
+    {
+      "time": "2026-09-23T13:00:00.000Z",
+      "action_item_id": "demo-onb-i14",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Nia O.\",\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-23T13:00:00.000Z",
+      "action_item_id": "demo-onb-i15",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Chloe B.\",\"deadline\":\"2026-09-29\"}"
+    },
+    {
+      "time": "2026-09-23T14:30:00.000Z",
+      "action_item_id": "demo-q4-i08",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-23",
+      "new_value": "2026-09-30"
+    },
+    {
+      "time": "2026-09-23T20:00:00.000Z",
+      "action_item_id": "demo-pay-i09",
+      "project_id": "demo-pay",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-24T20:00:00.000Z",
+      "action_item_id": "demo-pay-i08",
+      "project_id": "demo-pay",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-25T20:00:00.000Z",
+      "action_item_id": "demo-pay-i05",
+      "project_id": "demo-pay",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-26T14:30:00.000Z",
+      "action_item_id": "demo-q4-i02",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-27",
+      "new_value": "2026-10-11"
+    },
+    {
+      "time": "2026-09-26T14:30:00.000Z",
+      "action_item_id": "demo-q4-i06",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-26",
+      "new_value": "2026-10-04"
+    },
+    {
+      "time": "2026-09-26T16:00:00.000Z",
+      "action_item_id": "demo-q4-i02",
+      "project_id": "demo-q4",
+      "event_type": "edited",
+      "old_value": "Send quote to Legal",
+      "new_value": "Send the vendor quote to Legal"
+    },
+    {
+      "time": "2026-09-26T20:00:00.000Z",
+      "action_item_id": "demo-onb-i06",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i12",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Ravi P.\",\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i13",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Aiko T.\",\"deadline\":\"2026-10-16\"}"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i14",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Sam R.\",\"deadline\":\"2026-10-14\"}"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i15",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Chloe B.\",\"deadline\":\"2026-09-28\"}"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i16",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Marcus L.\",\"deadline\":\"2026-10-17\"}"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i17",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Priya S.\",\"deadline\":\"2026-10-15\"}"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i18",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":null,\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-27T13:00:00.000Z",
+      "action_item_id": "demo-pay-i19",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Nia O.\",\"deadline\":\"2026-10-22\"}"
+    },
+    {
+      "time": "2026-09-27T14:30:00.000Z",
+      "action_item_id": "demo-pay-i02",
+      "project_id": "demo-pay",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-27",
+      "new_value": "2026-10-04"
+    },
+    {
+      "time": "2026-09-28T03:59:59.000Z",
+      "action_item_id": "demo-pay-i11",
+      "project_id": "demo-pay",
+      "event_type": "overdue",
+      "old_value": "2026-09-27",
+      "new_value": "2026-09-28"
+    },
+    {
+      "time": "2026-09-28T14:30:00.000Z",
+      "action_item_id": "demo-pay-i15",
+      "project_id": "demo-pay",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-28",
+      "new_value": "2026-10-02"
+    },
+    {
+      "time": "2026-09-28T20:00:00.000Z",
+      "action_item_id": "demo-onb-i15",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-29T13:00:00.000Z",
+      "action_item_id": "demo-onb-i16",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Jordan M.\",\"deadline\":\"2026-10-10\"}"
+    },
+    {
+      "time": "2026-09-29T13:00:00.000Z",
+      "action_item_id": "demo-onb-i17",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":null,\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-29T13:00:00.000Z",
+      "action_item_id": "demo-onb-i18",
+      "project_id": "demo-onb",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Sam R.\",\"deadline\":\"2026-10-03\"}"
+    },
+    {
+      "time": "2026-09-29T20:00:00.000Z",
+      "action_item_id": "demo-pay-i11",
+      "project_id": "demo-pay",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i16",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Aiko T.\",\"deadline\":\"2026-10-22\"}"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i17",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":null}"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i18",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Lena O.\",\"deadline\":\"2026-10-25\"}"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i19",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Ravi P.\",\"deadline\":\"2026-10-07\"}"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i20",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Ravi P.\",\"deadline\":\"2026-10-09\"}"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i21",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Chloe B.\",\"deadline\":\"2026-10-11\"}"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i22",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Tomás A.\",\"deadline\":\"2026-10-18\"}"
+    },
+    {
+      "time": "2026-09-30T13:00:00.000Z",
+      "action_item_id": "demo-q4-i23",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Nia O.\",\"deadline\":\"2026-10-02\"}"
+    },
+    {
+      "time": "2026-09-30T14:30:00.000Z",
+      "action_item_id": "demo-q4-i08",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-30",
+      "new_value": "2026-10-06"
+    },
+    {
+      "time": "2026-09-30T14:30:00.000Z",
+      "action_item_id": "demo-onb-i11",
+      "project_id": "demo-onb",
+      "event_type": "deadline_moved",
+      "old_value": "2026-09-30",
+      "new_value": "2026-10-07"
+    },
+    {
+      "time": "2026-09-30T20:00:00.000Z",
+      "action_item_id": "demo-onb-i05",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-09-30T20:00:00.000Z",
+      "action_item_id": "demo-onb-i07",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-10-01T13:00:00.000Z",
+      "action_item_id": "demo-pay-i21",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Jordan M.\",\"deadline\":\"2026-10-10\"}"
+    },
+    {
+      "time": "2026-10-01T13:00:00.000Z",
+      "action_item_id": "demo-pay-i22",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Sam R.\",\"deadline\":\"2026-10-13\"}"
+    },
+    {
+      "time": "2026-10-02T03:59:59.000Z",
+      "action_item_id": "demo-q4-i03",
+      "project_id": "demo-q4",
+      "event_type": "overdue",
+      "old_value": "2026-10-01",
+      "new_value": "2026-10-02"
+    },
+    {
+      "time": "2026-10-02T13:00:00.000Z",
+      "action_item_id": "demo-q4-i24",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Dana K.\",\"deadline\":null}"
+    },
+    {
+      "time": "2026-10-03T03:59:59.000Z",
+      "action_item_id": "demo-q4-i23",
+      "project_id": "demo-q4",
+      "event_type": "overdue",
+      "old_value": "2026-10-02",
+      "new_value": "2026-10-03"
+    },
+    {
+      "time": "2026-10-03T03:59:59.000Z",
+      "action_item_id": "demo-pay-i15",
+      "project_id": "demo-pay",
+      "event_type": "overdue",
+      "old_value": "2026-10-02",
+      "new_value": "2026-10-03"
+    },
+    {
+      "time": "2026-10-03T13:00:00.000Z",
+      "action_item_id": "demo-pay-i20",
+      "project_id": "demo-pay",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Lena O.\",\"deadline\":\"2026-10-05\"}"
+    },
+    {
+      "time": "2026-10-03T15:00:00.000Z",
+      "action_item_id": "demo-q4-i20",
+      "project_id": "demo-q4",
+      "event_type": "reassigned",
+      "old_value": "Ravi P.",
+      "new_value": "Chloe B."
+    },
+    {
+      "time": "2026-10-04T03:59:59.000Z",
+      "action_item_id": "demo-q4-i12",
+      "project_id": "demo-q4",
+      "event_type": "overdue",
+      "old_value": "2026-10-03",
+      "new_value": "2026-10-04"
+    },
+    {
+      "time": "2026-10-04T03:59:59.000Z",
+      "action_item_id": "demo-onb-i18",
+      "project_id": "demo-onb",
+      "event_type": "overdue",
+      "old_value": "2026-10-03",
+      "new_value": "2026-10-04"
+    },
+    {
+      "time": "2026-10-04T13:00:00.000Z",
+      "action_item_id": "demo-q4-i25",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Ravi P.\",\"deadline\":\"2026-10-08\"}"
+    },
+    {
+      "time": "2026-10-04T13:00:00.000Z",
+      "action_item_id": "demo-q4-i26",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Lena O.\",\"deadline\":\"2026-10-10\"}"
+    },
+    {
+      "time": "2026-10-04T13:00:00.000Z",
+      "action_item_id": "demo-q4-i27",
+      "project_id": "demo-q4",
+      "event_type": "created",
+      "old_value": null,
+      "new_value": "{\"owner\":\"Jordan M.\",\"deadline\":\"2026-10-10\"}"
+    },
+    {
+      "time": "2026-10-04T20:00:00.000Z",
+      "action_item_id": "demo-q4-i23",
+      "project_id": "demo-q4",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-10-05T03:59:59.000Z",
+      "action_item_id": "demo-q4-i06",
+      "project_id": "demo-q4",
+      "event_type": "overdue",
+      "old_value": "2026-10-04",
+      "new_value": "2026-10-05"
+    },
+    {
+      "time": "2026-10-05T03:59:59.000Z",
+      "action_item_id": "demo-pay-i02",
+      "project_id": "demo-pay",
+      "event_type": "overdue",
+      "old_value": "2026-10-04",
+      "new_value": "2026-10-05"
+    },
+    {
+      "time": "2026-10-05T20:00:00.000Z",
+      "action_item_id": "demo-onb-i18",
+      "project_id": "demo-onb",
+      "event_type": "done",
+      "old_value": "open",
+      "new_value": "done"
+    },
+    {
+      "time": "2026-10-04T02:49:26.322Z",
+      "action_item_id": "demo-q4-i08",
+      "project_id": "demo-q4",
+      "event_type": "deadline_moved",
+      "old_value": "2026-10-06",
+      "new_value": "2026-10-08"
+    }
+  ]
+}

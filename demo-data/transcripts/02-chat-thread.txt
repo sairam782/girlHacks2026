@@ -1,0 +1,10 @@
+[#portal-redesign]
+Kwame 10:02  Support export is in. 214 tickets, 38% mention navigation.
+Mei 10:05  Nice. Prototype A is basically done, B and C need another day or two. Probably Thursday.
+Rosa 10:07  Thursday is fine, but I need them before the Friday review.
+Imani 10:12  FYI the contrast on the current header fails WCAG AA. I'll write up the fixes this week.
+Jonas 10:15  Usability sessions: I've got 4 participants confirmed, still need 4 more. I'll chase the panel vendor tomorrow.
+Rosa 10:20  Also decided: we are dropping the old sidebar entirely, no hybrid.
+Kwame 10:31  Anyone want to take the analytics plan? I can't, I'm out next week.
+Mei 10:33  Not me, sorry.
+Rosa 10:40  I'll find someone by Monday.
