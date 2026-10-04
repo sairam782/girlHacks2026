@@ -27,17 +27,16 @@ export interface MoodMirrorProps {
   onOpenCommitment: (id: string) => void;
   /** Marks leaves as taken on under strain (raises slip risk); null clears the flag. */
   onFlag?: (ids: string[], mood: string | null) => Promise<void>;
+  /** Who is using Canopy (the header's "Viewing as"). Reports are private, so only their speaker is shown. */
+  viewerName: string | null;
   motes?: boolean;
 }
 
-export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, motes = true }: MoodMirrorProps) {
+export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, viewerName, motes = true }: MoodMirrorProps) {
   const [report, setReport] = useState<MoodReport | null>(null);
   const [status, setStatus] = useState<MoodStatus | null>(null);
   const [meeting, setMeeting] = useState<MeetingId>('vendor');
-  const [current, setCurrent] = useState<string | null>(null);
   const [names, setNames] = useState<Record<string, string>>({});
-  const [renaming, setRenaming] = useState(false);
-  const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; err?: boolean } | null>(null);
   const [showTranscript, setShowTranscript] = useState(false);
@@ -56,12 +55,8 @@ export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, m
       const body = await res.json();
       if (!res.ok) throw new Error(body?.error || body?.detail || res.statusText);
       const data = body as MoodReport;
-      const ids = Object.keys(data.people);
       setReport(data);
       setNames({});
-      setRenaming(false);
-      // Canopy's user is Jordan, so open on their report when they were in the room.
-      setCurrent(ids.find((id) => firstName(id) === 'jordan') ?? ids[0] ?? null);
       setMsg({ text: `${data.title} · ${data.turns.length} turns · ${mmss(data.team.duration_sec)} long` });
     } catch (e) {
       setMsg({ text: e instanceof Error ? e.message : String(e), err: true });
@@ -121,6 +116,11 @@ export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, m
     setReport((r) => (r ? { ...r, people: { ...r.people, [id]: { ...r.people[id], face, suggestions } } } : r));
   }, []);
 
+  // Only the viewer's own speaker: matched on first name, or claimed below for unnamed recording speakers.
+  const current = useMemo(() => {
+    if (!report || !viewerName) return null;
+    return Object.keys(report.people).find((id) => firstName(names[id] || id) === firstName(viewerName)) ?? null;
+  }, [report, names, viewerName]);
   const person = current && report ? report.people[current] : null;
   const people = report ? Object.keys(report.people) : [];
 
@@ -203,37 +203,25 @@ export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, m
           <section style={{ ...card, padding: '60px 20px', textAlign: 'center', color: '#8a948d', fontSize: 13.5 }}>
             {busy ? 'Reading the meeting…' : 'Pick a demo meeting or upload a recording to see the report.'}
           </section>
-        ) : !person || !current ? null : (
-          <>
-            {/* -------------------------------------------------- viewing as */}
-            <section style={{ ...card, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flex: 'none' }}>
-              <span style={micro}>Viewing as</span>
-              {people.map((id, i) => {
-                const active = id === current;
-                return (
-                  <button key={id} className={active ? undefined : 'hov-pick'} onClick={() => { setCurrent(id); setRenaming(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? '#e8eee6' : '#fff', border: `1px solid ${active ? '#bcd3c0' : '#dcdad0'}`, borderRadius: 14, padding: '4px 11px 4px 4px', fontSize: 12.5, fontWeight: active ? 500 : 400, color: active ? '#1d3a2b' : '#3a453e', cursor: 'pointer' }}>
-                    <span style={{ width: 22, height: 22, borderRadius: '50%', flex: 'none', background: AV[i % AV.length], fontSize: 9, fontWeight: 600, color: '#2b3630', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{initials(nm(id))}</span>
-                    {nm(id)}
-                    {firstName(id) === 'jordan' && <span style={{ fontSize: 11, color: '#7a857e' }}>(you)</span>}
+        ) : !person || !current ? (
+          <section style={{ ...card, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12, flex: 'none' }}>
+            <span style={{ fontFamily: serif, fontSize: 24, color: '#16211b' }}>{viewerName ? `${viewerName.split(' ')[0]} isn't named in this meeting` : 'Pick who you are in the header'}</span>
+            <span style={{ fontSize: 13, lineHeight: 1.5, color: '#65706a', maxWidth: 620 }}>
+              Mood Mirror reports are private: you only ever see your own. Switch who you are with “Viewing as” at the top, or, if this recording labelled you as a numbered speaker, claim it below.
+            </span>
+            {viewerName && people.some((id) => /^speaker\b/i.test(nm(id))) && (
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {people.filter((id) => /^speaker\b/i.test(nm(id))).map((id) => (
+                  <button key={id} className="hov-pick" onClick={() => setNames((n) => ({ ...n, [id]: viewerName }))}
+                    style={{ height: 32, padding: '0 12px', borderRadius: 9, background: '#fff', border: '1px solid #dcdad0', color: '#1d2620', fontSize: 12.5, cursor: 'pointer' }}>
+                    I'm {nm(id)}
                   </button>
-                );
-              })}
-              {renaming ? (
-                <form onSubmit={(e) => { e.preventDefault(); if (draft.trim()) setNames((n) => ({ ...n, [current]: draft.trim() })); setRenaming(false); }}
-                  style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
-                  <input autoFocus value={draft} onChange={(e) => setDraft(e.target.value)} aria-label={`Display name for ${current}`}
-                    style={{ height: 32, width: 130, padding: '0 10px', borderRadius: 9, border: '1px solid #dcdad0', background: '#fff', color: '#1d2620', font: 'inherit', fontSize: 13 }} />
-                  <button type="submit" className="hov-primary" style={{ height: 32, padding: '0 12px', borderRadius: 9, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 12.5, cursor: 'pointer' }}>Save</button>
-                </form>
-              ) : (
-                <button className="hov-soft" onClick={() => { setDraft(nm(current)); setRenaming(true); }}
-                  style={{ marginLeft: 'auto', height: 32, padding: '0 12px', borderRadius: 9, background: '#fff', border: '1px solid #dcdad0', color: '#65706a', fontSize: 12.5, cursor: 'pointer' }}>
-                  Rename speaker
-                </button>
-              )}
-            </section>
-
+                ))}
+              </div>
+            )}
+          </section>
+        ) : (
+          <>
             <Tiles person={person} report={report} />
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(330px, 1fr))', gap: 12, flex: 'none' }}>

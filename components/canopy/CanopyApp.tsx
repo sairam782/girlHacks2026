@@ -360,7 +360,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             onOpen={(projectId, id) => openLeaf(projectId, id)} onViewAs={viewAs} />
         )}
 
-        {isMood && <MoodMirror leaves={allLeaves} motes={motes} onBack={goGrove} onOpenCommitment={openCommitment} onFlag={flagMood} />}
+        {isMood && <MoodMirror leaves={allLeaves} motes={motes} onBack={goGrove} onOpenCommitment={openCommitment} onFlag={flagMood} viewerName={me?.name ?? null} />}
 
         {isTree && project && cur && (
           <div data-screen-label="02 Tree view" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '0 24px 20px' }}>
