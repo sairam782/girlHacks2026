@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { patchItem, type ItemPatch } from '@/lib/store';
 import { isDate } from '@/lib/dates';
+import { fail, readJson } from '@/lib/http';
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const b = await req.json();
+  let b: Record<string, unknown>;
+  try { b = await readJson(req); } catch (e) { return fail(e); }
   const p: ItemPatch = {};
   if (typeof b.text === 'string') p.text = b.text;
   if (b.owner === null || typeof b.owner === 'string') p.owner = b.owner && b.owner.trim() ? b.owner.trim() : null;
