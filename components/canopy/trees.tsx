@@ -136,10 +136,19 @@ export const GroveTree = memo(function GroveTree({ gd, cnt }: { gd: GroveProject
   );
 });
 
+// The drawing's vertical frame. The crown (leaf tips near y=140) and the ground (fallen-leaf
+// cards near y=906) both need room, or `overflow: hidden` on the panel crops them.
+const TOP = 76, HEIGHT = 854;
+
 function labelPos(q: Placement, L: number, lp?: LabelPos) {
   const a = (q.ang * Math.PI) / 180, dx = Math.cos(a), dy = Math.sin(a), tx = q.x + dx * L, ty = q.y + dy * L;
   const m = lp || (dy < -0.8 ? 'above' : dx < 0 ? 'left' : 'right');
-  if (m === 'above') return { x: tx, yTop: ty - 72, anchor: 'middle' };
+  // A card above the leaf needs 72 units of headroom. Near the crown there isn't any, so the
+  // card would be drawn off the top of the frame and clipped — drop it below the leaf instead.
+  if (m === 'above') {
+    const yTop = ty - 72;
+    if (yTop >= TOP + 10) return { x: tx, yTop, anchor: 'middle' };
+  }
   if (m === 'below') return { x: q.x + dx * L * 0.5, yTop: q.y + dy * L * 0.5 + 26, anchor: 'middle' };
   if (m === 'left') return { x: tx - 12, yTop: ty - 29, anchor: 'end' };
   return { x: tx + 12, yTop: ty - 29, anchor: 'start' };
@@ -245,13 +254,15 @@ export function ProjectTree({ leaves, fallen, branches, highlight, sel, hover, m
       if (hl) rings.push(<circle key={'pr' + l.id} cx={f1(mx)} cy={f1(my)} r={L * 0.6} fill="none" stroke="#2f8a77" strokeWidth={2} style={{ transformBox: 'fill-box', transformOrigin: 'center', animation: 'pulseRing 1.3s ease-out infinite' }} />);
       const show = mode === 'all' || isSel || isHov || hl || (mode === 'at-risk' && l.state !== 'g');
       if (show) {
-        const sub = `${l.stateLabel.toUpperCase()} · ${l.due.toUpperCase()}`;
+        // On an undated leaf the state label already says it, so don't repeat "· NO DATE".
+        const dated = l.due && !/^no date/i.test(l.stateLabel);
+        const sub = dated ? `${l.stateLabel.toUpperCase()} · ${l.due.toUpperCase()}` : l.stateLabel.toUpperCase();
         labels.push(labelCard('lb' + l.id, labelPos(q, L, l.lp), l.title.length > 30 ? l.title.slice(0, 29) + '…' : l.title, sub, l.state, initials(l.owner)));
       }
     });
 
     return (
-      <svg viewBox="170 140 1060 800" preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
+      <svg viewBox={`170 ${TOP} 1060 ${HEIGHT}`} preserveAspectRatio="xMidYMid meet" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' }}>
         <defs>
           {shadowFilter('ls', 1.6, 0.28)}
           {shadowFilter('cs', 4, 0.12)}
