@@ -56,7 +56,7 @@ const topicFor = (text: string) => TOPICS.find(([, re]) => re.test(text))?.[0] ?
 const VAGUE = /^(?:do|handle|take care of|look into|check|chase|fix|sort out|deal with|action|follow up on)\s+(?:it|that|this|them|those|those ones)$/i;
 
 async function viaGemini(text: string, meeting: string, weekday: string, people: string[]): Promise<Extracted[]> {
-  const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY! },

@@ -19,7 +19,7 @@ interface Recognition {
 }
 type RecognitionCtor = new () => Recognition;
 
-const HINTS = ['What do I owe?', 'Push the pricing to Thursday', 'Mark the budget done'];
+const HINTS = ["What's at risk?", 'Who is slipping?', 'Push the security review to Thursday', 'Nudge the owner'];
 
 // Talk to Canopy: speak, it acts on your real commitments and answers out loud.
 export function VoiceAgent({ personId, personName, asof, onChanged, onClose }: {
@@ -35,6 +35,9 @@ export function VoiceAgent({ personId, personName, asof, onChanged, onClose }: {
   const rec = useRef<Recognition | null>(null);
   const audio = useRef<HTMLAudioElement | null>(null);
   const alive = useRef(true);
+  const linesRef = useRef<Line[]>([]);
+
+  useEffect(() => { linesRef.current = lines; }, [lines]);
 
   const stopSpeaking = () => {
     audio.current?.pause();
@@ -59,11 +62,12 @@ export function VoiceAgent({ personId, personName, asof, onChanged, onClose }: {
   }, []);
 
   const send = useCallback(async (said: string) => {
+    const history = linesRef.current.slice(-6);
     setLines((l) => [...l, { who: 'you', text: said }]);
     setInterim('');
     setStatus('thinking');
     try {
-      const r = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ said, personId, asof }) });
+      const r = await fetch('/api/voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ said, personId, asof, history }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error || 'Something went wrong');
       if (!alive.current) return;

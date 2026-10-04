@@ -172,6 +172,23 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
     ['Mood Mirror', '', goMood, isMood],
     ['People', data.people.length, goPeople, screen === 'people'],
   ];
+  // Who you are looking at the grove as. Low-key by design: it lives in the sidebar footer, and
+  // only falls back to the header when the sidebar is hidden on a narrow window.
+  const meIdx = data.people.findIndex((p) => p.id === me?.id);
+  const viewAsRow = data.people.length > 0 && me ? (
+    <label className="hov-nav" title={`Viewing as ${me.name}`}
+      style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 9, minWidth: 0, padding: '7px 8px', borderRadius: 9, cursor: 'pointer' }}>
+      <span style={{ width: 22, height: 22, flex: 'none', borderRadius: '50%', background: AV[(meIdx < 0 ? 0 : meIdx) % AV.length], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 600, color: '#2b3630' }}>{initials(me.name)}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: '#4a554e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{me.name}</span>
+      <span style={{ flex: 'none', fontSize: 9, color: '#a9afa9' }}>▾</span>
+      {/* The real control, laid over the row so the menu is the browser's own. */}
+      <select value={me.id} onChange={(e) => viewAs(e.target.value)} aria-label="Viewing as"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0, border: 'none', cursor: 'pointer', font: 'inherit' }}>
+        {data.people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </select>
+    </label>
+  ) : null;
+
   const selectStyle = { height: 30, borderRadius: 8, border: '1px solid #e4e2d9', background: '#fff', fontSize: 12.5, color: '#2b3630', padding: '0 6px', fontFamily: 'inherit' } as const;
 
   return (
@@ -215,6 +232,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             </div>
             <div style={{ fontSize: 11, color: '#8a948d', lineHeight: 1.35 }}>Jump ahead to watch leaves yellow and wilt.</div>
           </div>
+          {viewAsRow}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 8px', fontSize: 11.5, color: '#7a857e' }}>
             {([['Gemini', data.engines.gemini, 'extraction'], ['ElevenLabs', data.engines.elevenlabs, 'voice'], ['Tiger Data', data.engines.tiger, 'history']] as const).map(([n, on, role]) => (
               <span key={n} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -232,14 +250,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
           {!mid && <button onClick={goGrove} style={{ background: 'none', border: 'none', fontFamily: serif, fontSize: 24, cursor: 'pointer', color: '#16211b' }}>Canopy</button>}
           <button className="hov-primary" onClick={() => (data.projects.length ? setIngest(true) : setNewProj(true))} style={{ height: 34, padding: '0 14px', borderRadius: 10, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>+ Paste a transcript</button>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 18 }}>
-            {data.people.length > 0 && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7a857e' }}>
-                Viewing as
-                <select value={me?.id ?? ''} onChange={(e) => viewAs(e.target.value)} style={selectStyle}>
-                  {data.people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
-              </label>
-            )}
+            {!mid && viewAsRow}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
               {headerStat(totals.open, '#16211b')}
               {statLabel(wide ? 'active commitments' : 'active')}
