@@ -21,9 +21,10 @@ export function leafState(it: Pick<ActionItem, 'status' | 'deadline'>, asof: str
 export const slipCount = (id: string, events: CommitmentEvent[]) => events.filter((e) => e.action_item_id === id && e.event_type === 'deadline_moved').length;
 
 // Heuristic: how likely the leaf is to wilt. Rises with urgency and with every deadline that already moved.
-export function slipRisk(d: Derived, slips: number): number {
+// A yes given under strain (flagged from Mood Mirror) adds a fixed bump.
+export function slipRisk(d: Derived, slips: number, moodFlag?: string | null): number {
   const base = { g: 8, a: 38, r: 78, d: 99, x: 0 }[d.state];
   if (d.state === 'x') return 0;
   const near = d.state === 'g' && d.daysLeft !== null ? Math.max(0, 14 - d.daysLeft) : 0;
-  return Math.min(99, base + near + slips * 14 + (d.daysLeft === null ? 8 : 0));
+  return Math.min(99, base + near + slips * 14 + (d.daysLeft === null ? 8 : 0) + (moodFlag ? 15 : 0));
 }

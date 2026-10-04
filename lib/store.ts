@@ -50,20 +50,77 @@ export async function getState(): Promise<AppState> {
   });
 }
 
+// Tiger Data is the history of record, but it only holds events written since DATABASE_URL was set
+// (seeded or reset demo data, or events from before, live only in the local log). Merge the two,
+// dedupe, and drop events for items that have since been deleted.
 export async function historyFor(projectId: string): Promise<CommitmentEvent[]> {
-  const t = await tigerHistory(projectId);
-  if (t) return t;
-  return (await getState()).events.filter((e) => e.project_id === projectId);
+  const s = await getState();
+  const live = new Set(s.items.filter((i) => i.project_id === projectId).map((i) => i.id));
+  const local = s.events.filter((e) => e.project_id === projectId);
+  const tiger = (await tigerHistory(projectId)) ?? [];
+  const key = (e: CommitmentEvent) => `${e.time}|${e.action_item_id}|${e.event_type}|${e.new_value ?? ''}`;
+  const seen = new Set<string>();
+  return [...tiger, ...local]
+    .filter((e) => live.has(e.action_item_id) && !seen.has(key(e)) && !!seen.add(key(e)))
+    .sort((a, b) => a.time.localeCompare(b.time));
 }
+
+/** Replaces everything (used by "Reset demo"). Events are mirrored to Tiger Data too. */
+export function replaceState(next: AppState) {
+  return mutate((s) => {
+    Object.assign(s, next);
+    void tigerInsert(next.events);
+    return { projects: next.projects.length, items: next.items.length };
+  });
+}
+
+export const deleteItem = (id: string) =>
+  mutate((s) => {
+    if (!s.items.some((i) => i.id === id)) throw new Error('Unknown item');
+    s.items = s.items.filter((i) => i.id !== id);
+    s.events = s.events.filter((e) => e.action_item_id !== id);
+    return { ok: true };
+  });
+
+/** Deletes a source and every item extracted from it: the undo for a bad paste. */
+export const deleteSource = (id: string) =>
+  mutate((s) => {
+    if (!s.sources.some((x) => x.id === id)) throw new Error('Unknown source');
+    const gone = new Set(s.items.filter((i) => i.source_id === id).map((i) => i.id));
+    s.sources = s.sources.filter((x) => x.id !== id);
+    s.items = s.items.filter((i) => !gone.has(i.id));
+    s.events = s.events.filter((e) => !gone.has(e.action_item_id));
+    return { removed: gone.size };
+  });
+
+export const deleteProject = (id: string) =>
+  mutate((s) => {
+    if (!s.projects.some((p) => p.id === id)) throw new Error('Unknown project');
+    s.projects = s.projects.filter((p) => p.id !== id);
+    s.sources = s.sources.filter((x) => x.project_id !== id);
+    s.items = s.items.filter((i) => i.project_id !== id);
+    s.events = s.events.filter((e) => e.project_id !== id);
+    // People stay unless they own nothing anywhere any more.
+    const owners = new Set(s.items.map((i) => i.owner_id));
+    s.people = s.people.filter((p) => owners.has(p.id));
+    return { ok: true };
+  });
 
 export const createProject = (name: string) =>
   mutate<Project>((s) => { const p = { id: randomUUID().slice(0, 8), name: name.trim(), created_at: new Date().toISOString() }; s.projects.push(p); return p; });
 
-// "Priya" matches "Priya S." and vice versa; anything else becomes a new person.
+// "Priya" matches "Priya S." and vice versa, but "Sam R." never matches "Sam K.". A bare first name
+// only matches when exactly one person has it; anything else becomes a new person.
 export function findOrAddPerson(s: AppState, name: string): Person {
   const n = name.trim().toLowerCase();
-  const first = (x: string) => x.toLowerCase().split(/\s+/)[0].replace(/\.$/, '');
-  const hit = s.people.find((p) => p.name.toLowerCase() === n) || s.people.find((p) => first(p.name) === first(name));
+  const parts = (x: string) => x.toLowerCase().replace(/\./g, '').split(/\s+/).filter(Boolean);
+  const first = (x: string) => parts(x)[0] ?? '';
+  const last = (x: string) => parts(x)[1]?.[0] ?? '';
+  const compatible = (p: Person) => first(p.name) === first(name) && (!last(p.name) || !last(name) || last(p.name) === last(name));
+  const candidates = s.people.filter(compatible);
+  const hit = s.people.find((p) => p.name.toLowerCase() === n)
+    || candidates.find((p) => last(name) && last(p.name) === last(name))
+    || (candidates.length === 1 ? candidates[0] : undefined);
   if (hit) {
     if (name.trim().length > hit.name.length && first(hit.name) === first(name)) hit.name = name.trim();
     return hit;
@@ -79,21 +136,28 @@ export function ingestItems(input: { projectId: string; title: string; kind: Sou
     const src: Source = { id: randomUUID().slice(0, 8), project_id: input.projectId, kind: input.kind, title: input.title, meeting_date: input.meetingDate, text: input.text, created_at: new Date().toISOString(), extracted: extracted.length };
     s.sources.push(src);
     const created: ActionItem[] = [];
+    let skipped = 0;
+    const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+    const existing = new Set(s.items.filter((i) => i.project_id === input.projectId && i.status === 'open').map((i) => `${i.owner_id ?? ''}|${norm(i.text)}`));
     // Created events carry the meeting's time so history lines up with when the commitment was made.
     const at = new Date(`${input.meetingDate}T09:00:00`);
     const when = (at.getTime() > Date.now() ? new Date() : at).toISOString();
     for (const x of extracted) {
       const owner = x.owner ? findOrAddPerson(s, x.owner) : null;
+      const k = `${owner?.id ?? ''}|${norm(x.text)}`;
+      if (existing.has(k)) { skipped++; continue; }
+      existing.add(k);
       const it: ActionItem = { id: randomUUID().slice(0, 8), project_id: input.projectId, source_id: src.id, owner_id: owner?.id ?? null, type: x.type, text: x.text, deadline: x.deadline, status: 'open', source_excerpt: x.source_excerpt, workstream: (x.workstream || input.title).trim(), created_at: when, done_at: null };
       s.items.push(it);
       created.push(it);
       log({ action_item_id: it.id, project_id: it.project_id, event_type: 'created', old_value: null, new_value: JSON.stringify({ owner: owner?.name ?? null, deadline: x.deadline }), time: when });
     }
-    return { source: src, items: created };
+    src.extracted = created.length;
+    return { source: src, items: created, skipped };
   });
 }
 
-export interface ItemPatch { text?: string; owner?: string | null; deadline?: string | null; done?: boolean; type?: 'action'; nudge?: boolean }
+export interface ItemPatch { text?: string; owner?: string | null; deadline?: string | null; done?: boolean; type?: 'action'; nudge?: boolean; mood?: string | null }
 
 export function patchItem(id: string, p: ItemPatch) {
   return mutate((s, log) => {
@@ -111,6 +175,7 @@ export function patchItem(id: string, p: ItemPatch) {
     // A nudge is a reminder sent to the owner with the evidence attached. Recording it means the
     // next person to open this leaf can see it was already chased, and when.
     if (p.nudge) ev('nudged', null, nameOf(it.owner_id));
+    if (p.mood !== undefined && (p.mood || null) !== (it.mood_flag ?? null)) { ev('mood_flagged', it.mood_flag ?? null, p.mood || null); it.mood_flag = p.mood || null; }
     if (p.done !== undefined && (p.done ? 'done' : 'open') !== it.status) {
       it.status = p.done ? 'done' : 'open';
       it.done_at = p.done ? new Date().toISOString() : null;

@@ -25,10 +25,12 @@ export interface MoodMirrorProps {
   leaves: Leaf[];
   onBack: () => void;
   onOpenCommitment: (id: string) => void;
+  /** Marks leaves as taken on under strain (raises slip risk); null clears the flag. */
+  onFlag?: (ids: string[], mood: string | null) => Promise<void>;
   motes?: boolean;
 }
 
-export default function MoodMirror({ leaves, onBack, onOpenCommitment, motes = true }: MoodMirrorProps) {
+export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, motes = true }: MoodMirrorProps) {
   const [report, setReport] = useState<MoodReport | null>(null);
   const [status, setStatus] = useState<MoodStatus | null>(null);
   const [meeting, setMeeting] = useState<MeetingId>('vendor');
@@ -239,7 +241,7 @@ export default function MoodMirror({ leaves, onBack, onOpenCommitment, motes = t
               <Timeline report={report} person={person} onJump={jumpTo} />
             </div>
 
-            <LinkedCommitments leaves={leaves} speaker={current} who={nm(current)} person={person} onOpen={onOpenCommitment} motes={motes} />
+            <LinkedCommitments leaves={leaves} speaker={current} who={nm(current)} person={person} onOpen={onOpenCommitment} onFlag={onFlag} motes={motes} />
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 12, alignItems: 'start', flex: 'none' }}>
               <FaceLayer report={report} speaker={current} who={nm(current)} onUpdated={applyFace} />
@@ -476,13 +478,26 @@ function Timeline({ report, person, onJump }: { report: MoodReport; person: Pers
 // ---------------------------------------------------- tie-in with the trees
 
 /** Mood Mirror's reason for existing inside Canopy: a tense yes is a leaf that is likely to wilt. */
-function LinkedCommitments({ leaves, speaker, who, person, onOpen, motes }: {
-  leaves: Leaf[]; speaker: string; who: string; person: PersonReport; onOpen: (id: string) => void; motes: boolean;
+function LinkedCommitments({ leaves, speaker, who, person, onOpen, onFlag, motes }: {
+  leaves: Leaf[]; speaker: string; who: string; person: PersonReport; onOpen: (id: string) => void;
+  onFlag?: (ids: string[], mood: string | null) => Promise<void>; motes: boolean;
 }) {
+  const [busy, setBusy] = useState(false);
   const owned = leavesFor(leaves, speaker);
   if (!owned.length) return null;
 
-  const strain = person.moments.filter((m) => ['frustrated', 'anxious', 'confused', 'sad', 'angry'].includes(m.emotion)).length;
+  const strained = person.moments.filter((m) => ['frustrated', 'anxious', 'confused', 'sad', 'angry'].includes(m.emotion));
+  const strain = strained.length;
+  // The tone to record on each leaf: the most common strained tone in this person's moments.
+  const counts = strained.reduce<Record<string, number>>((a, m) => ({ ...a, [m.emotion]: (a[m.emotion] || 0) + 1 }), {});
+  const tone = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const flagged = owned.length > 0 && owned.every((l) => !!l.mood);
+  const flag = async (mood: string | null) => {
+    if (!onFlag) return;
+    setBusy(true);
+    await onFlag(owned.map((l) => l.id), mood);
+    setBusy(false);
+  };
   const reasons = [
     strain > 0 ? `${strain} tense moment${strain === 1 ? '' : 's'}` : null,
     person.cut_offs > 0 ? `cut off ${person.cut_offs}×` : null,
@@ -500,6 +515,12 @@ function LinkedCommitments({ leaves, speaker, who, person, onOpen, motes }: {
               ? `This meeting carried ${reasons.join(', ')}. A yes given under strain is the kind of leaf that wilts, so Canopy watches these more closely.`
               : 'A steady meeting. These are the leaves that came out of it.'}
           </p>
+          {onFlag && tone && (
+            <button className="hov-soft" disabled={busy} onClick={() => flag(flagged ? null : tone)}
+              style={{ marginTop: 10, height: 32, padding: '0 12px', borderRadius: 9, border: '1px solid #d6d7e8', background: flagged ? '#fff' : '#6f7196', color: flagged ? '#4b4d70' : '#fff', fontSize: 12.5, cursor: busy ? 'wait' : 'pointer' }}>
+              {flagged ? `Shared as at risk (${tone}) · undo` : `Share as at risk: flag these ${owned.length} leaves`}
+            </button>
+          )}
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>

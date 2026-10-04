@@ -7,8 +7,10 @@ const fromUTC = (t: number) => { const d = new Date(t); return `${d.getUTCFullYe
 export const isDate = (s: unknown): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(toUTC(s));
 export function todayISO(): string {
   if (process.env.CANOPY_TODAY && isDate(process.env.CANOPY_TODAY)) return process.env.CANOPY_TODAY;
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  // Servers usually run on UTC, which would flip "today" to tomorrow in the evening for a US team.
+  const tz = (typeof process !== 'undefined' && process.env.CANOPY_TZ) || 'America/New_York';
+  try { return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()); }
+  catch { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
 }
 export const addDays = (s: string, n: number) => fromUTC(toUTC(s) + n * DAY);
 export const diffDays = (from: string, to: string) => Math.round((toUTC(to) - toUTC(from)) / DAY);

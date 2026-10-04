@@ -28,6 +28,7 @@ export type LabelPos = 'left' | 'right' | 'above' | 'below';
 export interface Leaf {
   id: string; limb: string; t: number; side?: number;
   ws: string; title: string; owner: string; due: string; state: Exclude<LeafState, 'd'>; stateLabel: string; risk: number; lp?: LabelPos;
+  mood?: string; // Mood Mirror flag, e.g. "anxious"
 }
 
 export interface FallenLeaf { id: string; title: string; owner: string; x: number; y: number; rot: number }

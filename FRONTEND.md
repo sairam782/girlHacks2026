@@ -27,12 +27,13 @@ The app is a single Next.js page (`app/page.tsx` → `components/canopy/CanopyAp
 - Logo (back to the Grove) and the tagline.
 - Nav: **The Grove**, **Add a source**, **Sources**, **Mood Mirror**, **People**.
 - Project list with health dots and percentages; each opens its tree.
-- **Time travel**: −1d, +1d, +3d and reset, to watch leaves yellow, wilt and fall.
+- **Time travel**: −1d, +1d, +3d and back to today, to watch leaves yellow, wilt and fall. **Reset demo data** restores the demo grove.
 - Engine status: Gemini, ElevenLabs and Tiger Data, each shown as live or on its fallback.
 - **+ New project**.
 
 ### 3. Header
-- **+ Paste a transcript** (opens the ingest dialog, or New project if there are none).
+- **+ Paste a transcript** (opens the ingest dialog, or New project if there are none). Gemini extracts, then you review each item (owner, date, workstream, keep or drop) before **Plant N on the tree**. The same text twice is refused; items already on the tree are skipped.
+- Below 1180px wide, People, Mood Mirror and +1 day buttons appear here in place of the sidebar.
 - **Viewing as** dropdown: whose briefing, owed list and voice agent you see. Saved in the browser.
 - Live counts: active commitments, at risk, orphaned decisions.
 
@@ -41,13 +42,15 @@ The app is a single Next.js page (`app/page.tsx` → `components/canopy/CanopyAp
 - Tabs:
   - **Tree view**: the tree, with leaves grouped into up to three workstream branches; hover to enlarge, click to open the commitment panel; legend with live counts; zoom **+ / − / FIT**.
   - **List**: every item in a table; click a row to open it.
-  - **Sources**: the ingested transcripts, chats and docs.
+  - **Sources**: the ingested transcripts, chats and docs, each with **Delete** (removes the source and its items).
   - **Timeline**: how deadlines slipped and the full event log.
 - Empty state: "A bare trunk" with **Add a source**.
 
 ### 5. Commitment panel (right rail when an item is selected)
 - Title, owner, due date (with the original struck through if it slipped), state, **slip risk %**, lifecycle, and the source quote it was extracted from.
-- **Mark done** (or reopen) and **Edit owner / date**. Changes save through `PATCH /api/items/[id]` and are logged as events.
+- **Mark done** (or reopen), **Nudge**, **Edit owner / date** and **Delete**. Changes save through `/api/items/[id]` and are logged as events.
+- A Mood Mirror note when the owner sounded strained while committing (+15% slip risk), with **Clear**.
+- **Delete project** sits in the tree header.
 
 ### 6. Right rail when nothing is selected
 - **Morning briefing**: what the viewer owes (overdue first) with a play button, waveform, timer and speed control. Each line opens its commitment; "N more this week" opens People; the seeds line opens the first unowned decision. Audio is ElevenLabs, or the browser voice without a key.
@@ -68,6 +71,7 @@ The app is a single Next.js page (`app/page.tsx` → `components/canopy/CanopyAp
 
 ### 9. Mood Mirror
 - A private per-person report on how a meeting felt: tone per sentence with the exact words, causes of mood shifts, a score against the team average, next steps, a spoken recap, and the commitments that person took on.
+- **Share as at risk** (the person's own choice) records the strained tone on those commitments, raising their slip risk on the tree. The report itself stays private.
 - Two demo meetings and transcript uploads work in the browser. Recordings, the opt-in face layer and the spoken recap need the Python service in `mood-mirror/`.
 
 ### 10. Keyboard shortcuts
@@ -80,7 +84,7 @@ The app is a single Next.js page (`app/page.tsx` → `components/canopy/CanopyAp
 
 | Gap | Notes |
 |---|---|
-| No navigation on narrow screens | Below 1180px the sidebar is hidden with no menu to replace it, so Mood Mirror, People, New project and Time travel can't be reached. Below 1000px the right rail is hidden too |
+| Thin navigation on narrow screens | Below 1180px the sidebar is replaced by People, Mood Mirror and +1 day buttons in the header; New project and Reset are only in the sidebar. Below 1000px the right rail is hidden |
 | No search | There is no search box or ⌘K |
 | No auth | "Viewing as" is a dropdown, not a login. Anyone can view as anyone |
 | No nudges or notifications | Nothing is sent to an owner when a date moves or a leaf yellows |
@@ -92,7 +96,8 @@ The app is a single Next.js page (`app/page.tsx` → `components/canopy/CanopyAp
 
 | Feature | Status |
 |---|---|
-| Projects and sources | Built: `POST /api/projects`, `POST /api/ingest` |
+| Projects and sources | Built: `POST /api/projects`, `POST /api/ingest` (with a preview step), and delete for items, sources and projects |
+| Demo reset | Built: `POST /api/reset` and the **Reset demo data** button |
 | Extraction (decision, owner, deadline, workstream, source line) | Built: Gemini, with a rules fallback |
 | Leaf states and slip risk | Built: derived from deadline, status and slips (`lib/leaf.ts`) |
 | Edit, reassign, mark done | Built: `PATCH /api/items/[id]`, logged as events |

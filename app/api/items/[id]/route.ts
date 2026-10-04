@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { patchItem, type ItemPatch } from '@/lib/store';
+import { deleteItem, patchItem, type ItemPatch } from '@/lib/store';
 import { isDate } from '@/lib/dates';
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -13,6 +13,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof b.done === 'boolean') p.done = b.done;
   if (b.nudge === true) p.nudge = true;
   if (b.type === 'action') p.type = 'action';
+  if (b.mood === null || typeof b.mood === 'string') p.mood = b.mood ? String(b.mood).slice(0, 40) : null;
   try { return NextResponse.json(await patchItem(id, p)); }
+  catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 404 }); }
+}
+
+export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+  try { return NextResponse.json(await deleteItem(id)); }
   catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 404 }); }
 }

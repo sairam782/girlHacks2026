@@ -1,0 +1,165 @@
+// The demo grove as data: three projects, seven people, and a commitment history whose dates are
+// relative to "now", so leaf states are right whenever the demo runs. Used by `npm run seed` and by
+// the in-app "Reset demo" button (POST /api/reset).
+
+const PEOPLE = ['Priya S.', 'Sam R.', 'Jordan M.', 'Dana K.', 'Marcus L.', 'Lena O.', 'Aiko T.'];
+
+// [text, owner, workstream, dueOffset, sourceKey, excerpt, opts]
+//   due: number of days from today, or null for no date
+//   opts.done: days ago it was completed   opts.slips: [previous due offsets, oldest first]
+const Q4 = [
+  // --- Legal
+  ['Send the vendor quote to Legal', 'Priya S.', 'Legal', 2, 'standup',
+    "I'll send the vendor quote by Wednesday.", { slips: [-5, -1] }],
+  ['Redline the MSA with Vendor A', 'Dana K.', 'Legal', 9, 'standup', "I'll redline the MSA once the quote lands.", {}],
+  ['Finish the data processing addendum', 'Marcus L.', 'Legal', -3, 'legal',
+    "I'll finish the DPA review by Thursday the 1st.", {}],
+  ['Countersign the mutual NDA', 'Dana K.', 'Legal', 1, 'legal', 'NDA is ready for countersignature.', {}],
+  ['Complete the vendor compliance checklist', 'Marcus L.', 'Legal', 7, 'legal', 'I can take the compliance checklist.', {}],
+  ['Send the kickoff recap to the vendor', 'Dana K.', 'Legal', -7, 'standup', "I'll get the recap out today.", { done: 7 }],
+
+  // --- Engineering
+  ['Run the security review of Vendor A', 'Jordan M.', 'Engineering', 1, 'chat',
+    "I'll have the security review back to you by Tuesday.", { slips: [-1] }],
+  ['Export the legacy data set', 'Sam R.', 'Engineering', 11, 'standup', "I'll handle the legacy data export.", {}],
+  ['Spike the SSO integration', 'Aiko T.', 'Engineering', 10, 'standup', "I'll run the SSO spike this sprint.", {}],
+  ['Draft the cutover runbook', 'Sam R.', 'Engineering', 2, 'standup',
+    "I'll have a cutover runbook draft by Friday.", { slips: [-2] }],
+  ['Load test the new endpoints', 'Aiko T.', 'Engineering', 15, 'doc', 'Load testing can wait until after the freeze.', {}],
+  ['Provision sandbox access', 'Sam R.', 'Engineering', -1, 'chat', 'Sandbox access by Wednesday, latest.', {}],
+  ['Decommission the old webhooks', 'Sam R.', 'Engineering', -3, 'doc', 'Old webhooks still need decommissioning.', {}],
+  ['Migrate staging to Vendor A', 'Aiko T.', 'Engineering', -4, 'standup', "I'll move staging over this week.", { done: 4 }],
+
+  // --- Finance
+  ['Sign off on the Q4 budget', 'Jordan M.', 'Finance', -2, 'finance',
+    "I'll sign off on the budget by Friday so Priya can move.", {}],
+  ['Raise the PO for Vendor A', 'Lena O.', 'Finance', 7, 'finance', "I'll raise the PO once Legal signs.", {}],
+  ['Compare Vendor A and B costs', 'Lena O.', 'Finance', 3, 'finance', 'I can put the cost comparison together.', {}],
+  ['Draft the invoice schedule', 'Lena O.', 'Finance', 18, 'doc', 'Invoice schedule is a later job.', {}],
+  ['Update the Q4 forecast', 'Lena O.', 'Finance', 11, 'finance', "I'll update the forecast after the PO.", {}],
+  ['Close out the Q3 cost true-up', 'Lena O.', 'Finance', -3, 'finance', 'The Q3 true-up is still open.', {}],
+  ['Negotiate the volume discount', 'Lena O.', 'Finance', -3, 'finance', "I'll push them on volume pricing.", { done: 3 }],
+
+  // --- decisions (branch notes, never owned)
+  ['Standardise on Vendor A for all regions', null, 'Legal', null, 'standup',
+    'We decided to go with Vendor A across all regions.', { type: 'decision' }],
+  ['Freeze code Thursday noon before cutover', null, 'Engineering', null, 'standup',
+    "Let's agree a code freeze Thursday at noon.", { type: 'decision' }],
+  ['Hold the Q4 budget at its current level', null, 'Finance', null, 'finance',
+    'We agreed not to increase the Q4 envelope.', { type: 'decision' }],
+
+  // --- unowned actions: the seeds waiting for an owner
+  ['Tell Legal about the new timeline', null, 'Legal', 4, 'standup', 'Someone needs to tell Legal about the new timeline.', {}],
+  ["Notify the current vendor we won't renew", null, 'Finance', 6, 'chat', "We still haven't told the incumbent.", {}],
+  ['Own the post-cutover support rota', null, 'Engineering', null, 'standup', 'Who owns support after cutover?', {}],
+];
+
+const SOURCES = {
+  standup: ['mtg', 'Monday standup', -5],
+  chat: ['chat', '#vendor-migration thread', -3],
+  doc: ['doc', 'Vendor Migration Plan', -2],
+  finance: ['mtg', 'Finance sync', -6],
+};
+
+// Two lighter projects so the Grove reads as a grove. [text, owner, workstream, due, done?]
+const SIDE = {
+  'Onboarding Revamp': [
+    ['Ship the welcome checklist', 'Aiko T.', 'Design', 8], ['Rewrite the first-run copy', 'Priya S.', 'Design', 12],
+    ['Add progress indicators', 'Aiko T.', 'Design', 6], ['Instrument the drop-off funnel', 'Sam R.', 'Data', 9],
+    ['Set up the activation dashboard', 'Sam R.', 'Data', 14], ['Define the activation metric', 'Jordan M.', 'Data', 5],
+    ['Move the survey after sign-up', 'Priya S.', 'Design', -2], ['A/B test the empty state', 'Aiko T.', 'Design', 16],
+    ['Draft the welcome email series', 'Dana K.', 'Lifecycle', 10], ['Localise onboarding for EU', 'Dana K.', 'Lifecycle', 20],
+    ['Audit the sign-up form', 'Priya S.', 'Design', -6, 6], ['Pick the onboarding video tool', 'Jordan M.', 'Lifecycle', -9, 9],
+  ],
+  'Payroll API Launch': [
+    ['Finish the payroll webhook', 'Sam R.', 'Platform', 7], ['Document the API surface', 'Marcus L.', 'Docs', 11],
+    ['Add idempotency keys', 'Sam R.', 'Platform', 3], ['Pen-test the payout endpoint', 'Aiko T.', 'Platform', 13],
+    ['Write the migration guide', 'Marcus L.', 'Docs', 9], ['Publish the sandbox keys', 'Aiko T.', 'Platform', 1],
+    ['Sign the processor agreement', 'Dana K.', 'Compliance', 15], ['Complete the SOC 2 evidence pack', 'Dana K.', 'Compliance', -1],
+    ['Review the data retention policy', 'Marcus L.', 'Compliance', -3], ['Draft the launch announcement', 'Priya S.', 'Docs', 5],
+    ['Set up status page alerts', 'Sam R.', 'Platform', -7, 7], ['Approve the pricing tiers', 'Lena O.', 'Compliance', -4, 4],
+  ],
+};
+
+export function buildDemo(now = Date.now()) {
+  const pad = (n) => String(n).padStart(2, '0');
+  const DAY = 86400000;
+  const iso = (d) => { const x = new Date(now + d * DAY); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`; };
+  const stamp = (d, h = 10) => new Date(new Date(now + d * DAY).setHours(h, 0, 0, 0)).toISOString();
+
+
+  const state = { projects: [], people: [], sources: [], items: [], events: [] };
+  let n = 0;
+  // A fresh tag per build, so a reset never collides with events already mirrored to Tiger Data.
+    const tag = Math.random().toString(36).slice(2, 6);
+    const id = (p) => `${p}${tag}${(++n).toString(36).padStart(3, '0')}`;
+
+  const personId = new Map();
+  for (const name of PEOPLE) {
+    const p = { id: id('pe'), name, email: `${name.split(' ')[0].toLowerCase()}@example.com` };
+    state.people.push(p);
+    personId.set(name, p.id);
+  }
+
+  function addItem({ project, source, text, owner, workstream, due, opts = {} }) {
+    const createdAt = stamp(source.offset, 9);
+    const it = {
+      id: id('it'), project_id: project.id, source_id: source.id,
+      owner_id: owner ? personId.get(owner) : null,
+      type: opts.type === 'decision' ? 'decision' : 'action',
+      text, deadline: due === null ? null : iso(due), status: opts.done ? 'done' : 'open',
+      source_excerpt: opts.excerpt ?? text, workstream,
+      created_at: createdAt, done_at: opts.done ? stamp(-opts.done, 16) : null,
+    };
+    state.items.push(it);
+
+    const ev = (type, offset, hour, old_value, new_value) =>
+      state.events.push({ time: stamp(offset, hour), action_item_id: it.id, project_id: project.id, event_type: type, old_value, new_value });
+
+    // The lifecycle the Timeline and the commitment panel read back.
+    const first = opts.slips?.length ? iso(opts.slips[0]) : it.deadline;
+    ev('created', source.offset, 9, null, JSON.stringify({ text, owner, deadline: first }));
+    let from = first;
+    for (const [i, next] of [...(opts.slips ?? []).slice(1), due].entries()) {
+      if (!opts.slips?.length) break;
+      const to = iso(next);
+      ev('deadline_moved', source.offset + 1 + i * 2, 15, from, to);
+      from = to;
+    }
+    if (opts.done) ev('done', -opts.done, 16, null, null);
+    return it;
+  }
+
+  function addProject(name, rows, sourceMap) {
+    const project = { id: id('pr'), name, created_at: stamp(-14, 9) };
+    state.projects.push(project);
+    const sources = {};
+    for (const [key, [kind, title, offset]] of Object.entries(sourceMap)) {
+      const s = { id: id('so'), project_id: project.id, kind, title, meeting_date: iso(offset), text: '', created_at: stamp(offset, 9), extracted: 0 };
+      s.offset = offset;
+      state.sources.push(s);
+      sources[key] = s;
+    }
+    for (const row of rows) {
+      const [text, owner, workstream, due, sourceKey, excerpt, opts] = row;
+      const source = sources[sourceKey] ?? Object.values(sources)[0];
+      const it = addItem({ project, source, text, owner, workstream, due, opts: { ...opts, excerpt } });
+      source.extracted++;
+      if (it) continue;
+    }
+    for (const s of state.sources) delete s.offset;
+    return project;
+  }
+
+  addProject('Q4 Vendor Migration', Q4, SOURCES);
+
+  for (const [name, rows] of Object.entries(SIDE)) {
+    addProject(
+      name,
+      rows.map(([text, owner, ws, due, done]) => [text, owner, ws, due, 'notes', text, done ? { done } : {}]),
+      { notes: ['mtg', `${name} sync`, -4] },
+    );
+  }
+
+  return state;
+}

@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import { extract } from '@/lib/extract';
 import { getState, ingestItems } from '@/lib/store';
 import { isDate, todayISO, weekday, WEEKDAYS } from '@/lib/dates';
-import type { SourceKind } from '@/lib/types';
+import type { Extracted, SourceKind } from '@/lib/types';
 
 export const maxDuration = 60;
 
+// Two steps so a person reviews what Gemini found before it lands on the tree:
+//   { preview: true, ...source }   → extract only, nothing saved
+//   { items: Extracted[], ...source } → save exactly these items (as reviewed)
+// Without either flag it extracts and saves in one go, as before.
 export async function POST(req: Request) {
   const b = await req.json();
   const text = typeof b.text === 'string' ? b.text.trim() : '';
@@ -13,11 +17,33 @@ export async function POST(req: Request) {
   if (text.length > 60000) return NextResponse.json({ error: 'Text is too long (60k characters max).' }, { status: 400 });
   const state = await getState();
   if (!state.projects.some((p) => p.id === b.projectId)) return NextResponse.json({ error: 'Pick a project.' }, { status: 400 });
+  const squash = (t: string) => t.replace(/\s+/g, ' ').trim();
+  const dupe = state.sources.find((s) => s.project_id === b.projectId && s.text && squash(s.text) === squash(text));
+  if (dupe) return NextResponse.json({ error: `This text was already added as "${dupe.title}". Delete that source first to re-extract it.` }, { status: 409 });
+
   const meetingDate = isDate(b.meetingDate) ? b.meetingDate : todayISO();
   const kind: SourceKind = ['mtg', 'chat', 'doc'].includes(b.kind) ? b.kind : 'mtg';
+  const title = typeof b.title === 'string' && b.title.trim() ? b.title.trim() : kind === 'chat' ? 'Chat thread' : kind === 'doc' ? 'Document' : 'Meeting';
+
+  if (Array.isArray(b.items)) {
+    const items: Extracted[] = b.items
+      .filter((x: Partial<Extracted>) => x && typeof x.text === 'string' && x.text.trim())
+      .slice(0, 200)
+      .map((x: Partial<Extracted>) => ({
+        type: x.type === 'decision' ? 'decision' : 'action',
+        text: x.text!.trim().slice(0, 300),
+        owner: typeof x.owner === 'string' && x.owner.trim() ? x.owner.trim().slice(0, 60) : null,
+        deadline: isDate(x.deadline) ? x.deadline : null,
+        source_excerpt: typeof x.source_excerpt === 'string' && x.source_excerpt.trim() ? x.source_excerpt.trim().slice(0, 600) : x.text!.trim(),
+        workstream: typeof x.workstream === 'string' && x.workstream.trim() ? x.workstream.trim().slice(0, 28) : null,
+      }));
+    const result = await ingestItems({ projectId: b.projectId, title, kind, meetingDate, text }, items);
+    return NextResponse.json({ ...result, engine: typeof b.engine === 'string' ? b.engine : 'reviewed' });
+  }
+
   const people = state.people.map((p) => p.name);
   const { items, engine, note } = await extract(text, meetingDate, WEEKDAYS[weekday(meetingDate)], people);
-  const title = typeof b.title === 'string' && b.title.trim() ? b.title.trim() : kind === 'chat' ? 'Chat thread' : kind === 'doc' ? 'Document' : 'Meeting';
+  if (b.preview === true) return NextResponse.json({ items, engine, note, people });
   const result = await ingestItems({ projectId: b.projectId, title, kind, meetingDate, text }, items);
   return NextResponse.json({ ...result, engine, note });
 }

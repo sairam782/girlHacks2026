@@ -127,6 +127,33 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
     await refresh();
   }, [refresh]);
 
+  const remove = useCallback(async (url: string, msg: string) => {
+    const r = await fetch(url, { method: 'DELETE' });
+    setToast(r.ok ? msg : (await r.json()).error || 'Could not delete');
+    await refresh();
+  }, [refresh]);
+  const deleteItem = async (id: string) => { setSel(null); await remove(`/api/items/${id}`, 'Deleted.'); };
+  const deleteSource = async (id: string) => remove(`/api/sources/${id}`, 'Source and its items deleted.');
+  const deleteProject = async (id: string, name: string) => {
+    if (!window.confirm(`Delete the project "${name}" and everything in it?`)) return;
+    setPid(null); setScreen('grove'); setSel(null);
+    await remove(`/api/projects/${id}`, `Deleted "${name}".`);
+  };
+  const resetDemo = async () => {
+    if (!window.confirm('Reset to the demo grove? This replaces every project, source and commitment.')) return;
+    const r = await fetch('/api/reset', { method: 'POST' });
+    if (!r.ok) { setToast((await r.json()).error || 'Reset failed'); return; }
+    setPid(null); setScreen('grove'); setSel(null); setOffset(0);
+    await refresh();
+    setToast('Demo grove restored.');
+  };
+  // Mood Mirror: mark the leaves someone took on under strain, which raises their slip risk.
+  const flagMood = useCallback(async (ids: string[], mood: string | null) => {
+    await Promise.all(ids.map((id) => fetch(`/api/items/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mood }) })));
+    await refresh();
+    setToast(mood ? `Flagged ${ids.length} leaf${ids.length === 1 ? '' : 'ves'}: slip risk raised.` : 'Mood flags cleared.');
+  }, [refresh]);
+
   const createProject = async (name: string) => {
     const r = await fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
     const p = await r.json();
@@ -214,6 +241,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
               <button onClick={() => setOffset(0)} disabled={!offset} style={{ flex: 1, height: 26, borderRadius: 7, border: '1px solid #e4e2d9', background: '#fff', fontFamily: mono, fontSize: 11, cursor: 'pointer', opacity: offset ? 1 : 0.4 }}>0</button>
             </div>
             <div style={{ fontSize: 11, color: '#8a948d', lineHeight: 1.35 }}>Jump ahead to watch leaves yellow and wilt.</div>
+            <button onClick={resetDemo} style={{ height: 26, borderRadius: 7, border: '1px solid #e4e2d9', background: 'none', fontSize: 11.5, color: '#7a857e', cursor: 'pointer' }}>Reset demo data</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '0 8px', fontSize: 11.5, color: '#7a857e' }}>
             {([['Gemini', data.engines.gemini, 'extraction'], ['ElevenLabs', data.engines.elevenlabs, 'voice'], ['Tiger Data', data.engines.tiger, 'history']] as const).map(([n, on, role]) => (
@@ -230,6 +258,13 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <header style={{ height: 60, flex: 'none', display: 'flex', alignItems: 'center', gap: 20, padding: '0 24px', whiteSpace: 'nowrap' }}>
           {!mid && <button onClick={goGrove} style={{ background: 'none', border: 'none', fontFamily: serif, fontSize: 24, cursor: 'pointer', color: '#16211b' }}>Canopy</button>}
+          {!mid && (
+            <nav style={{ display: 'flex', gap: 4 }}>
+              {([['People', goPeople, screen === 'people'], ['Mood Mirror', goMood, isMood], ['+1 day', () => setOffset((o) => o + 1), false]] as const).map(([l, go, on]) => (
+                <button key={l} onClick={go} style={{ height: 30, padding: '0 10px', borderRadius: 8, border: '1px solid #e4e2d9', background: on ? '#e8eee6' : '#fff', fontSize: 12.5, color: '#2b3630', cursor: 'pointer' }}>{l}</button>
+              ))}
+            </nav>
+          )}
           <button className="hov-primary" onClick={() => (data.projects.length ? setIngest(true) : setNewProj(true))} style={{ height: 34, padding: '0 14px', borderRadius: 10, border: 'none', background: '#2f6b4f', color: '#fff', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>+ Paste a transcript</button>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 18 }}>
             {data.people.length > 0 && (
@@ -309,7 +344,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             onOpen={(projectId, id) => openLeaf(projectId, id)} onViewAs={viewAs} />
         )}
 
-        {isMood && <MoodMirror leaves={allLeaves} motes={motes} onBack={goGrove} onOpenCommitment={openCommitment} />}
+        {isMood && <MoodMirror leaves={allLeaves} motes={motes} onBack={goGrove} onOpenCommitment={openCommitment} onFlag={flagMood} />}
 
         {isTree && project && cur && (
           <div data-screen-label="02 Tree view" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '0 24px 20px' }}>
@@ -332,6 +367,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
                 ))}
                 {owners.length > 6 && <span style={{ marginLeft: 6, fontSize: 12, color: '#7a857e' }}>+{owners.length - 6}</span>}
               </div>
+              <button onClick={() => deleteProject(project.id, project.name)} style={{ height: 28, padding: '0 10px', borderRadius: 8, border: '1px solid #efd3c6', background: 'none', fontSize: 11.5, color: '#9c4529', cursor: 'pointer' }}>Delete project</button>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginTop: 12, borderBottom: '1px solid #e4e2d9', fontSize: 13 }}>
               {([['tree', 'Tree view'], ['list', 'List'], ['sources', 'Sources'], ['timeline', 'Timeline']] as const).map(([k, l]) => (
@@ -340,7 +376,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
             </div>
 
             {tab === 'list' && <ListView items={vs} sel={sel} onSelect={onSelect} />}
-            {tab === 'sources' && <SourcesView sources={data.sources.filter((s) => s.project_id === project.id)} items={vs} />}
+            {tab === 'sources' && <SourcesView sources={data.sources.filter((s) => s.project_id === project.id)} items={vs} onDelete={deleteSource} />}
             {tab === 'timeline' && <TimelineView hist={hist} items={vs} />}
             {tab === 'tree' && (
               <div style={{ flex: 1, minHeight: 0, position: 'relative', marginTop: 14, borderRadius: 18, border: '1px solid #e4e2d9', overflow: 'hidden', background: 'linear-gradient(180deg, #e9f1ea 0%, #f3f1e6 66%, #e7ebda 100%)' }}>
@@ -382,7 +418,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
       {railShow && (
         <aside style={{ width: wide ? 372 : 330, flex: 'none', display: 'flex', flexDirection: 'column', gap: 12, padding: selected ? '14px 16px 16px 0' : '14px 16px 104px 0', boxSizing: 'border-box', overflowY: 'auto', overflowX: 'hidden' }}>
           {selected ? (
-            <CommitmentPanel key={selected.it.id + selected.events.length} v={selected} source={data.sources.find((s) => s.id === selected.it.source_id)} people={data.people} onClose={() => setSel(null)} onPatch={patch} />
+            <CommitmentPanel key={selected.it.id + selected.events.length} v={selected} source={data.sources.find((s) => s.id === selected.it.source_id)} people={data.people} onClose={() => setSel(null)} onPatch={patch} onDelete={deleteItem} />
           ) : (
             <>
               <MorningBriefing dateLabel={fmt(asof)} items={briefingItems} personId={me?.id ?? null} asof={asof} onPlaying={setVoice} />
