@@ -1,4 +1,4 @@
-# Canopy
+# Canopy - [Canopy – Live Demo](https://canopy-girlhacks.vercel.app/)
 
 **Meetings end. Commitments should not.**
 
