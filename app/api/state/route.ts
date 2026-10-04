@@ -6,5 +6,5 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const s = await getState();
-  return NextResponse.json({ ...s, today: todayISO(), engines: { gemini: !!process.env.GEMINI_API_KEY, elevenlabs: !!process.env.ELEVENLABS_API_KEY, tiger: !!process.env.DATABASE_URL } });
+  return NextResponse.json({ ...s, today: todayISO(), demoMode: process.env.CANOPY_DEMO_MODE === 'true', engines: { gemini: !!process.env.GEMINI_API_KEY, elevenlabs: !!process.env.ELEVENLABS_API_KEY, tiger: !!process.env.DATABASE_URL } });
 }

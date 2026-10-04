@@ -12,12 +12,12 @@ export function MoodCard({ onOpen }: { onOpen: () => void }) {
         <span style={{ fontFamily: serif, fontSize: 23, color: '#16211b' }}>Mood Mirror</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: mono, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4b4d72', whiteSpace: 'nowrap' }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6f7196' }} />
-          Private
+          Personal view
         </span>
       </div>
       <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: '#7a857e' }}>
         Canopy tracks what you owe. Mood Mirror covers how the meeting felt while you agreed to it — the tone of each
-        moment, what triggered it, and what to do next. Only you see your own report.
+        moment, what triggered it, and what to do next. Explore a report for the selected participant.
       </p>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: 13, background: 'linear-gradient(135deg, #f1f0f6, #eef1f6)' }}>
         <span style={{ width: 34, height: 34, flex: 'none', borderRadius: '2px 100% 2px 100%', background: 'linear-gradient(135deg, #a9b0d4, #6f7196)' }} />

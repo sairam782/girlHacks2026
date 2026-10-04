@@ -9,7 +9,7 @@ export const tigerEnabled = () => !!process.env.DATABASE_URL;
 
 function init(): Promise<void> {
   if (!ready) {
-    pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false } });
+    pool ??= new Pool({ connectionString: process.env.DATABASE_URL, max: 3, connectionTimeoutMillis: 8000, query_timeout: 8000, ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false } });
     ready = (async () => {
       await pool!.query(`CREATE TABLE IF NOT EXISTS commitment_events (
         time TIMESTAMPTZ NOT NULL, action_item_id TEXT NOT NULL, project_id TEXT NOT NULL,

@@ -4,7 +4,9 @@
 
 Canopy turns meeting talk into tracked action. Paste in a transcript, a chat thread, or a doc. Canopy pulls out every decision, who owns it, and when it is due, and grows each one into a leaf on the project's tree. Each person then gets a 60-second spoken briefing each morning on what they owe, and can talk back to change it.
 
-Live app: [CANOPY-URL] (deploying)
+Live app: [Canopy shared hackathon demo](https://canopy-girlhacks.vercel.app/)
+
+The hosted demo uses fictional data and shared participant views. It does not enforce private accounts; reports and edits are visible to demo visitors. Recording uploads, face analysis, and Mood Mirror audio recaps need a separately hosted Python service and are unavailable on this deployment. See [VERCEL.md](VERCEL.md) for its PostgreSQL storage and deployment setup.
 
 ## The problem
 

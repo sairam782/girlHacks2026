@@ -1,5 +1,7 @@
 # Deploying Canopy to Azure App Service
 
+For the Vercel shared demo with PostgreSQL persistence, see [VERCEL.md](VERCEL.md). The disk requirements below apply to the original local-file storage mode.
+
 Canopy keeps its data and cached briefing audio on disk, so it needs a host with a persistent disk. Azure App Service (Linux) keeps everything under `/home`, which survives restarts. Hosts that wipe the disk on every request (Vercel, Netlify) will lose data.
 
 Budget about 20 minutes. Azure for Students gives free credit if you don't have a subscription.

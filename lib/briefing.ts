@@ -5,6 +5,7 @@ import { createHash } from 'crypto';
 import { DATA_DIR } from './store';
 import { diffDays, fmtLong, weekday, WEEKDAYS } from './dates';
 import type { ActionItem, AppState, Person } from './types';
+import { speak } from './tts';
 
 const MAX_WORDS = 165;
 const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
@@ -64,6 +65,14 @@ export async function briefing(personId: string, state: AppState, asof: string):
   if (!person) throw new Error('Unknown person');
   const script = buildScript(person, state, asof);
   if (!process.env.ELEVENLABS_API_KEY) return { script, audio: null, cached: false, engine: 'browser', note: 'No ELEVENLABS_API_KEY set; using the browser voice.' };
+
+  // A second Vercel request may run on another instance. Return audio directly rather
+  // than handing the browser a URL to a file on this invocation's temporary disk.
+  if (process.env.VERCEL) {
+    const audio = await speak(script);
+    return { script, audio: audio ? `data:audio/mpeg;base64,${audio.toString('base64')}` : null,
+      cached: false, engine: audio ? 'elevenlabs' : 'browser' };
+  }
 
   const key = `${person.id}-${asof}-${createHash('sha1').update(script).digest('hex').slice(0, 8)}`;
   const file = path.join(DATA_DIR, 'audio', `${key}.mp3`);

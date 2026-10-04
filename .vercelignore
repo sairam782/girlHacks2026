@@ -1,0 +1,10 @@
+.data
+.env*
+**/.env*
+work
+outputs
+mood-mirror/*.py
+mood-mirror/requirements.txt
+mood-mirror/models
+mood-mirror/static
+mood-mirror/sample/*.jpg

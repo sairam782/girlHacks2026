@@ -59,6 +59,7 @@ async function viaGemini(text: string, meeting: string, weekday: string, people:
   const model = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST',
+    signal: AbortSignal.timeout(25_000),
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': process.env.GEMINI_API_KEY! },
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: PROMPT(text, meeting, weekday, people) }] }],

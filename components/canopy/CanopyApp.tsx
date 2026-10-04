@@ -25,7 +25,7 @@ export interface CanopyAppProps {
 
 type Screen = 'grove' | 'tree' | 'mood' | 'people';
 type Tab = 'tree' | 'list' | 'sources' | 'timeline';
-type Data = AppState & { today: string; engines: { gemini: boolean; elevenlabs: boolean; tiger: boolean } };
+type Data = AppState & { today: string; demoMode?: boolean; engines: { gemini: boolean; elevenlabs: boolean; tiger: boolean } };
 
 const hash = (s: string) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const safe = (fn: () => void) => { try { fn(); } catch { /* storage unavailable */ } };
@@ -279,6 +279,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
       )}
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        {data.demoMode && <div role="note" style={{ flex: 'none', padding: '8px 24px', background: '#e8eee6', color: '#345641', fontSize: 12 }}>Shared hackathon demo · Use fictional meeting data. Reports and edits are visible to everyone using this demo.</div>}
         <header style={{ height: 60, flex: 'none', display: 'flex', alignItems: 'center', gap: 20, padding: '0 24px', whiteSpace: 'nowrap' }}>
           {!mid && <button onClick={goGrove} style={{ background: 'none', border: 'none', fontFamily: serif, fontSize: 24, cursor: 'pointer', color: '#16211b' }}>Canopy</button>}
           {!mid && (

@@ -4,7 +4,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 const toUTC = (s: string) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
 const fromUTC = (t: number) => { const d = new Date(t); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; };
 
-export const isDate = (s: unknown): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(toUTC(s));
+export const isDate = (s: unknown): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(toUTC(s)) && fromUTC(toUTC(s)) === s;
 export function todayISO(): string {
   if (process.env.CANOPY_TODAY && isDate(process.env.CANOPY_TODAY)) return process.env.CANOPY_TODAY;
   // Servers usually run on UTC, which would flip "today" to tomorrow in the evening for a US team.

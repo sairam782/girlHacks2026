@@ -163,7 +163,7 @@ export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, v
         <span style={{ padding: '9px 0', borderBottom: '2px solid #2f6b4f', marginBottom: -1, color: '#1d3a2b', fontWeight: 500 }}>Your report</span>
         <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, background: '#f1f0f6', border: '1px solid #dedde8', borderRadius: 14, padding: '4px 11px', fontSize: 12, color: '#4b4d72', whiteSpace: 'nowrap' }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6f7196' }} />
-          Private · only you see this report
+          Personal view · selected participant
         </span>
       </div>
 
@@ -207,7 +207,7 @@ export default function MoodMirror({ leaves, onBack, onOpenCommitment, onFlag, v
           <section style={{ ...card, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 12, flex: 'none' }}>
             <span style={{ fontFamily: serif, fontSize: 24, color: '#16211b' }}>{viewerName ? `${viewerName.split(' ')[0]} isn't named in this meeting` : 'Pick who you are in the header'}</span>
             <span style={{ fontSize: 13, lineHeight: 1.5, color: '#65706a', maxWidth: 620 }}>
-              Mood Mirror reports are private: you only ever see your own. Switch who you are with “Viewing as” at the top, or, if this recording labelled you as a numbered speaker, claim it below.
+              This prototype shows the selected participant's report. Switch the participant with “Viewing as”, or, if this recording used numbered speakers, choose the matching speaker below.
             </span>
             {viewerName && people.some((id) => /^speaker\b/i.test(nm(id))) && (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

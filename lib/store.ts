@@ -4,6 +4,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { todayISO, diffDays } from './dates';
 import { tigerClear, tigerDeleteItems, tigerHistory, tigerInsert } from './tiger';
+import { databaseStore, readDatabase, mutateDatabase } from './persistence';
 import type { ActionItem, AppState, CommitmentEvent, EventType, Extracted, Person, Project, Source, SourceKind } from './types';
 
 export const DATA_DIR = process.env.CANOPY_DATA_DIR || path.join(process.cwd(), '.data');
@@ -13,12 +14,24 @@ const empty = (): AppState => ({ projects: [], people: [], sources: [], items: [
 let queue: Promise<unknown> = Promise.resolve();
 
 async function read(): Promise<AppState> {
+  if (databaseStore()) return readDatabase();
   try { return { ...empty(), ...JSON.parse(await fs.readFile(FILE, 'utf8')) }; } catch { return empty(); }
 }
 
 // Serialises read-modify-write cycles so concurrent requests cannot clobber each other.
 export function mutate<T>(fn: (s: AppState, log: (e: Omit<CommitmentEvent, 'time'> & { time?: string }) => void) => T | Promise<T>): Promise<T> {
   const run = queue.then(async () => {
+    if (databaseStore()) {
+      const pending: CommitmentEvent[] = [];
+      const out = await mutateDatabase(async (s) => fn(s, (e) => {
+        const ev = { time: new Date().toISOString(), ...e } as CommitmentEvent;
+        s.events.push(ev);
+        pending.push(ev);
+      }));
+      // Finish mirroring before Vercel can suspend the invocation.
+      await tigerInsert(pending);
+      return out;
+    }
     const s = await read();
     const pending: CommitmentEvent[] = [];
     const out = await fn(s, (e) => { const ev = { time: new Date().toISOString(), ...e } as CommitmentEvent; s.events.push(ev); pending.push(ev); });
