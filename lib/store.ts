@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { todayISO, diffDays } from './dates';
-import { tigerDeleteItems, tigerHistory, tigerInsert } from './tiger';
+import { tigerClear, tigerDeleteItems, tigerHistory, tigerInsert } from './tiger';
 import type { ActionItem, AppState, CommitmentEvent, EventType, Extracted, Person, Project, Source, SourceKind } from './types';
 
 export const DATA_DIR = process.env.CANOPY_DATA_DIR || path.join(process.cwd(), '.data');
@@ -67,9 +67,12 @@ export async function historyFor(projectId: string): Promise<CommitmentEvent[]> 
 
 /** Replaces everything (used by "Reset demo"). Events are mirrored to Tiger Data too. */
 export function replaceState(next: AppState) {
-  return mutate((s) => {
+  return mutate(async (s) => {
     Object.assign(s, next);
-    void tigerInsert(next.events);
+    // The old history belongs to items that no longer exist, so clear before mirroring: otherwise
+    // every reset leaves another full copy in the hypertable that no screen can reach.
+    await tigerClear();
+    await tigerInsert(next.events);
     return { projects: next.projects.length, items: next.items.length };
   });
 }

@@ -51,3 +51,12 @@ export async function tigerDeleteItems(itemIds: string[]): Promise<void> {
     await pool!.query('DELETE FROM commitment_events WHERE action_item_id = ANY($1)', [itemIds]);
   } catch (err) { console.error('[tiger] delete failed', err); }
 }
+
+/** Empties the hypertable. Used when the whole store is replaced, so history cannot pile up. */
+export async function tigerClear(): Promise<void> {
+  if (!tigerEnabled()) return;
+  try {
+    await init();
+    await pool!.query('DELETE FROM commitment_events');
+  } catch (err) { console.error('[tiger] clear failed', err); }
+}
