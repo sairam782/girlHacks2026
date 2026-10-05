@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AV, C, initials, type GroveProject } from './data';
 import { MorningBriefing, TalkButton, type BriefingItem } from './briefing';
 import { VoiceAgent } from './VoiceAgent';
@@ -26,7 +26,7 @@ export interface CanopyAppProps {
 
 type Screen = 'grove' | 'tree' | 'mood' | 'people';
 type Tab = 'tree' | 'list' | 'sources' | 'timeline';
-type Data = AppState & { today: string; demoMode?: boolean; engines: { gemini: boolean; elevenlabs: boolean; tiger: boolean } };
+type Data = AppState & { today: string; demoMode?: boolean; engines: { gemini: boolean; elevenlabs: boolean; tiger: boolean; database?: boolean } };
 
 const hash = (s: string) => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const safe = (fn: () => void) => { try { fn(); } catch { /* storage unavailable */ } };
@@ -50,14 +50,22 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const [offset, setOffset] = useState(0);
   const [toast, setToast] = useState('');
   const [hist, setHist] = useState<(History & { events: CommitmentEvent[] }) | null>(null);
+  const refreshVersion = useRef(0);
+  const refreshPending = useRef(0);
 
   const refresh = useCallback(async () => {
+    const version = ++refreshVersion.current;
+    refreshPending.current++;
     try {
-      const r = await fetch('/api/state', { cache: 'no-store' });
-      if (!r.ok) throw new Error('Could not load');
-      setData(await r.json());
+      const r = await fetch('/api/state', { cache: 'no-store', signal: AbortSignal.timeout(15000) });
+      const next = await r.json();
+      if (!r.ok) throw new Error(next.error || 'Could not load. Retrying automatically.');
+      if (version !== refreshVersion.current) return;
+      setData((current) => JSON.stringify(current) === JSON.stringify(next) ? current : next);
       setLoadErr('');
-    } catch (e) { setLoadErr((e as Error).message); }
+    } catch (e) {
+      if (version === refreshVersion.current) setLoadErr(e instanceof Error ? e.message : 'Connection interrupted. Retrying automatically.');
+    } finally { refreshPending.current--; }
   }, []);
 
   useEffect(() => {
@@ -66,7 +74,17 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
     const onResize = () => setVw(window.innerWidth);
     onResize();
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    const sync = () => { if (!document.hidden && !refreshPending.current) void refresh(); };
+    const timer = window.setInterval(sync, 3000);
+    window.addEventListener('focus', sync);
+    document.addEventListener('visibilitychange', sync);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('focus', sync);
+      document.removeEventListener('visibilitychange', sync);
+      window.clearInterval(timer);
+      refreshVersion.current++;
+    };
   }, [refresh]);
 
   const asof = data ? addDays(data.today, offset) : '';
@@ -160,8 +178,8 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
     if (r.ok) { setPid(p.id); setScreen('tree'); setSel(null); setIngest(true); }
   };
 
-  if (vw === null || (!data && !loadErr)) return null;
-  if (!data) return <div style={{ padding: 40, fontFamily: 'system-ui', color: '#9c4529' }}>Canopy could not reach its API: {loadErr}</div>;
+  if (vw === null || (!data && !loadErr)) return <div role="status" style={{ padding: 40, fontFamily: 'system-ui' }}>Loading your grove…</div>;
+  if (!data) return <div role="alert" style={{ padding: 40, fontFamily: 'system-ui', color: '#9c4529' }}>{loadErr} <button onClick={() => void refresh()}>Retry now</button></div>;
 
   const isTree = screen === 'tree' && !!project;
   const isMood = screen === 'mood';
@@ -263,7 +281,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
           <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', gap: 10, padding: '10px 14px 14px', borderTop: '1px solid #ecebe3' }}>
             {viewAsRow}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 10px', padding: '0 8px', fontSize: 11, color: '#7a857e' }}>
-            {([['Gemini', data.engines.gemini, 'extraction'], ['ElevenLabs', data.engines.elevenlabs, 'voice'], ['Tiger Data', data.engines.tiger, 'history']] as const).map(([n, on, role]) => (
+            {([['Gemini', data.engines.gemini, 'extraction'], ['ElevenLabs', data.engines.elevenlabs, 'voice'], [data.engines.database ? 'PostgreSQL' : 'Tiger Data', data.engines.database || data.engines.tiger, 'persistent history']] as const).map(([n, on, role]) => (
               <span key={n} title={on ? `${n}: ${role}` : `${n}: no key set, using the built-in fallback`}
                 style={{ display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
                 <span style={{ width: 7, height: 7, borderRadius: '50%', flex: 'none', background: on ? '#4f9d69' : '#c9c7bb', boxShadow: on ? '0 0 0 2.5px rgba(79,157,105,0.18)' : undefined }} />
@@ -457,6 +475,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
           onDone={async (r) => { setIngest(false); await refresh(); openProject(r.projectId); setToast(`Extracted ${r.n} item${r.n === 1 ? '' : 's'} with ${r.engine === 'gemini' ? 'Gemini' : 'built-in rules'}.${r.note ? ' ' + r.note : ''}`); }} />
       )}
       {newProj && <NewProjectModal onClose={() => setNewProj(false)} onCreate={createProject} />}
+      {loadErr && <div role="status" style={{ position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', zIndex: 70, padding: '10px 16px', borderRadius: 10, background: '#fff2dc', color: '#814a22', fontSize: 13 }}>Connection interrupted. Showing the last saved data; retrying automatically.</div>}
       {projectToDelete && <DeleteProjectDialog key={projectToDelete.id} project={projectToDelete} onCancel={() => setProjectToDelete(null)} onDeleted={async () => {
         const name = projectToDelete.name;
         setProjectToDelete(null);

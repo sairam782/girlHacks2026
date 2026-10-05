@@ -8,7 +8,7 @@ Set these variables in the Vercel project's **Production** environment:
 
 | Variable | Value |
 | --- | --- |
-| `DATABASE_URL` | Your Tiger Data/PostgreSQL connection string, including the provider's SSL settings |
+| `CANOPY_DATABASE_URL` | Dedicated Neon/PostgreSQL connection string, including the provider's SSL settings |
 | `CANOPY_STORE` | `postgres` |
 | `CANOPY_STORE_KEY` | `canopy-girlhacks` |
 | `CANOPY_DEMO_MODE` | `true` |
@@ -20,7 +20,9 @@ Set these variables in the Vercel project's **Production** environment:
 | `GEMINI_MODEL` | A model verified with your key |
 | `ELEVENLABS_API_KEY` | Secret; optional for browser speech fallback |
 
-The application creates its state table if necessary and seeds fictional projects only if that store key does not exist. It does not overwrite an existing store. The database user needs table-creation and read/write permissions. Tiger Data event mirroring uses the existing `commitment_events` hypertable; a regular PostgreSQL server can keep canonical history in the JSONB state even if the optional hypertable integration is unavailable.
+The application creates its state table if necessary and seeds fictional projects only if that store key does not exist. It does not overwrite an existing store. The database user needs table-creation and read/write permissions. `CANOPY_DATABASE_URL` takes precedence over the legacy `DATABASE_URL`; when configured, both entities and history are committed atomically in the PostgreSQL state and the old Tiger Data endpoint is never contacted. Keep the legacy setting for recovery until any old data can be exported; changing the connection does not migrate unavailable data.
+
+Visible browser sessions refresh every three seconds and immediately on focus. Changes in other sessions therefore appear within a polling interval plus network latency. Requests do not use cached state, overlapping stale responses cannot replace newer results, and temporary failures retain the last saved view with a reconnecting notice. This is near-real-time polling, not a WebSocket subscription.
 
 The reset endpoint is disabled to avoid clearing the existing commitment history. Seed scripts designed for local JSON storage should not be used to initialize this deployment.
 

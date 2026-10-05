@@ -5,7 +5,9 @@ import type { CommitmentEvent } from './types';
 let pool: Pool | null = null;
 let ready: Promise<void> | null = null;
 
-export const tigerEnabled = () => !!process.env.DATABASE_URL;
+// A dedicated Canopy database keeps history atomically in the canonical state.
+// Do not contact the legacy Timescale service when this replacement is configured.
+export const tigerEnabled = () => !!process.env.DATABASE_URL && !process.env.CANOPY_DATABASE_URL;
 
 function init(): Promise<void> {
   if (!ready) {

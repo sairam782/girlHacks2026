@@ -3,21 +3,27 @@ import { Pool } from 'pg';
 import { buildDemo } from '@/scripts/demo-data.mjs';
 import type { AppState } from './types';
 
-export const databaseStore = () => process.env.CANOPY_STORE === 'postgres' || !!process.env.VERCEL;
+export const databaseStore = () => process.env.CANOPY_STORE === 'postgres' || !!process.env.VERCEL || !!process.env.CANOPY_DATABASE_URL;
 const storeKey = () => process.env.CANOPY_STORE_KEY || 'canopy-demo';
 let pool: Pool | undefined;
 let ready: Promise<void> | undefined;
 
 function db() {
-  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is required for persistent Vercel storage.');
-  return pool ??= new Pool({
-    connectionString: process.env.DATABASE_URL,
+  const connectionString = process.env.CANOPY_DATABASE_URL || process.env.DATABASE_URL;
+  if (!connectionString) throw new Error('A PostgreSQL connection is required for persistent Vercel storage.');
+  if (pool) return pool;
+  pool = new Pool({
+    connectionString,
     max: 3,
     connectionTimeoutMillis: 8000,
     idleTimeoutMillis: 10000,
+    statement_timeout: 10000,
+    idle_in_transaction_session_timeout: 10000,
     // DATABASE_URL can supply the provider's sslmode and certificate settings.
     ...(process.env.DATABASE_SSL === 'false' ? { ssl: false } : {}),
   });
+  pool.on('error', (error) => console.error('[database] idle connection error', error.message));
+  return pool;
 }
 
 async function init() {
