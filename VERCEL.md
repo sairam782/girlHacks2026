@@ -13,6 +13,8 @@ Set these variables in the Vercel project's **Production** environment:
 | `CANOPY_STORE_KEY` | `canopy-girlhacks` |
 | `CANOPY_DEMO_MODE` | `true` |
 | `CANOPY_ALLOW_RESET` | `false` |
+| `CANOPY_DELETE_USERNAME` | Server-only administrator username for project deletion |
+| `CANOPY_DELETE_PASSWORD` | Sensitive server-only password for project deletion |
 | `CANOPY_TZ` | `America/New_York` |
 | `GEMINI_API_KEY` | Secret; optional for rules fallback |
 | `GEMINI_MODEL` | A model verified with your key |
@@ -21,6 +23,8 @@ Set these variables in the Vercel project's **Production** environment:
 The application creates its state table if necessary and seeds fictional projects only if that store key does not exist. It does not overwrite an existing store. The database user needs table-creation and read/write permissions. Tiger Data event mirroring uses the existing `commitment_events` hypertable; a regular PostgreSQL server can keep canonical history in the JSONB state even if the optional hypertable integration is unavailable.
 
 The reset endpoint is disabled to avoid clearing the existing commitment history. Seed scripts designed for local JSON storage should not be used to initialize this deployment.
+
+Project deletion prompts for administrator credentials on every attempt and verifies them in the API before accessing storage. Missing server credentials disable deletion. This protects project deletion only; it does not introduce user accounts or authentication for other editing actions.
 
 Morning briefing audio is returned directly with its response on Vercel, so it does not depend on an instance-local cache. This means fresh briefing requests can incur another ElevenLabs generation.
 

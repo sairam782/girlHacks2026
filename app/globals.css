@@ -26,3 +26,4 @@ button { font: inherit; color: inherit; }
 @keyframes orbSpin { to { transform: rotate(360deg) } }
 @keyframes sway { 0%, 100% { transform: rotate(-2deg) } 50% { transform: rotate(2.5deg) } }
 @keyframes wave { 0%, 100% { transform: scaleY(.25) } 50% { transform: scaleY(1) } }
+dialog.project-delete-dialog::backdrop { background: rgba(30, 40, 34, .45); }

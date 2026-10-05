@@ -10,6 +10,7 @@ import { BranchNotes, CommitmentPanel, FollowThrough, UnownedDecisions } from '.
 import { CanvasBg, GroveTree, ProjectTree } from './trees';
 import { IngestModal, ListView, NewProjectModal, SourcesView, TimelineView } from './views';
 import { PeopleView } from './people';
+import { DeleteProjectDialog } from './DeleteProjectDialog';
 import { addDays, diffDays, fmt, fmtLong } from '@/lib/dates';
 import type { History } from '@/lib/history';
 import type { AppState, CommitmentEvent } from '@/lib/types';
@@ -44,6 +45,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   const [zoom, setZoom] = useState(1);
   const [ingest, setIngest] = useState(false);
   const [newProj, setNewProj] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string; name: string } | null>(null);
   const [viewer, setViewer] = useState<string | null>(null);
   const [offset, setOffset] = useState(0);
   const [toast, setToast] = useState('');
@@ -134,11 +136,7 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
   }, [refresh]);
   const deleteItem = async (id: string) => { setSel(null); await remove(`/api/items/${id}`, 'Deleted.'); };
   const deleteSource = async (id: string) => remove(`/api/sources/${id}`, 'Source and its items deleted.');
-  const deleteProject = async (id: string, name: string) => {
-    if (!window.confirm(`Delete the project "${name}" and everything in it?`)) return;
-    setPid(null); setScreen('grove'); setSel(null);
-    await remove(`/api/projects/${id}`, `Deleted "${name}".`);
-  };
+  const deleteProject = (id: string, name: string) => setProjectToDelete({ id, name });
   const resetDemo = async () => {
     if (!window.confirm('Reset to the demo grove? This replaces every project, source and commitment.')) return;
     const r = await fetch('/api/reset', { method: 'POST' });
@@ -459,6 +457,13 @@ export default function CanopyApp({ motes = true, leafLabels = 'at-risk' }: Cano
           onDone={async (r) => { setIngest(false); await refresh(); openProject(r.projectId); setToast(`Extracted ${r.n} item${r.n === 1 ? '' : 's'} with ${r.engine === 'gemini' ? 'Gemini' : 'built-in rules'}.${r.note ? ' ' + r.note : ''}`); }} />
       )}
       {newProj && <NewProjectModal onClose={() => setNewProj(false)} onCreate={createProject} />}
+      {projectToDelete && <DeleteProjectDialog key={projectToDelete.id} project={projectToDelete} onCancel={() => setProjectToDelete(null)} onDeleted={async () => {
+        const name = projectToDelete.name;
+        setProjectToDelete(null);
+        setPid(null); setScreen('grove'); setSel(null);
+        await refresh();
+        setToast(`Deleted "${name}".`);
+      }} />}
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 60, background: '#16211b', color: '#fff', fontSize: 13, padding: '10px 16px', borderRadius: 12, maxWidth: 'min(560px, calc(100% - 32px))', boxShadow: '0 12px 30px rgba(0,0,0,0.25)' }}>{toast}</div>
       )}
