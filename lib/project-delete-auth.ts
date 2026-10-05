@@ -4,10 +4,11 @@ const digest = (value: string) => createHash('sha256').update(value).digest();
 
 /** Credentials are checked for every deletion, before any database work. */
 export async function requireProjectDeleteCredentials(req: Request): Promise<Response | null> {
-  const expectedUser = process.env.CANOPY_DELETE_USERNAME;
+  const expectedUsers = (process.env.CANOPY_DELETE_USERNAMES || process.env.CANOPY_DELETE_USERNAME || '')
+    .split(',').map((username) => username.trim()).filter(Boolean);
   const expectedPassword = process.env.CANOPY_DELETE_PASSWORD;
   const headers = { 'Cache-Control': 'no-store' };
-  if (!expectedUser || !expectedPassword) {
+  if (!expectedUsers.length || !expectedPassword) {
     return Response.json({ error: 'Project deletion is unavailable until administrator credentials are configured.' }, { status: 503, headers });
   }
 
@@ -21,7 +22,12 @@ export async function requireProjectDeleteCredentials(req: Request): Promise<Res
     return Response.json({ error: 'Incorrect username or password.' }, { status: 401, headers });
   }
   // Fixed-length digests avoid both timing differences and length-based exceptions.
-  const userMatches = timingSafeEqual(digest(username), digest(expectedUser));
+  const usernameDigest = digest(username);
+  let userMatches = false;
+  for (const expectedUser of expectedUsers) {
+    const matches = timingSafeEqual(usernameDigest, digest(expectedUser));
+    userMatches = matches || userMatches;
+  }
   const passwordMatches = timingSafeEqual(digest(password), digest(expectedPassword));
   if (!userMatches || !passwordMatches) {
     return Response.json({ error: 'Incorrect username or password.' }, { status: 401, headers });

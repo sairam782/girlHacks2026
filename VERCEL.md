@@ -13,7 +13,8 @@ Set these variables in the Vercel project's **Production** environment:
 | `CANOPY_STORE_KEY` | `canopy-girlhacks` |
 | `CANOPY_DEMO_MODE` | `true` |
 | `CANOPY_ALLOW_RESET` | `false` |
-| `CANOPY_DELETE_USERNAME` | Server-only administrator username for project deletion |
+| `CANOPY_DELETE_USERNAMES` | Server-only comma-separated usernames allowed to delete projects |
+| `CANOPY_DELETE_USERNAME` | Legacy single-username fallback when the allowlist is unset |
 | `CANOPY_DELETE_PASSWORD` | Sensitive server-only password for project deletion |
 | `CANOPY_TZ` | `America/New_York` |
 | `GEMINI_API_KEY` | Secret; optional for rules fallback |
@@ -26,7 +27,7 @@ Visible browser sessions refresh every three seconds and immediately on focus. C
 
 The reset endpoint is disabled to avoid clearing the existing commitment history. Seed scripts designed for local JSON storage should not be used to initialize this deployment.
 
-Project deletion prompts for administrator credentials on every attempt and verifies them in the API before accessing storage. Missing server credentials disable deletion. This protects project deletion only; it does not introduce user accounts or authentication for other editing actions.
+Project deletion prompts for administrator credentials on every attempt and verifies them in the API before accessing storage. Every username in `CANOPY_DELETE_USERNAMES` uses the same `CANOPY_DELETE_PASSWORD`. Missing server credentials disable deletion. This protects project deletion only; it does not introduce user accounts or authentication for other editing actions.
 
 Morning briefing audio is returned directly with its response on Vercel, so it does not depend on an instance-local cache. This means fresh briefing requests can incur another ElevenLabs generation.
 

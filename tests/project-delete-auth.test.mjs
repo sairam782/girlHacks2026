@@ -4,11 +4,12 @@ import { requireProjectDeleteCredentials } from '../lib/project-delete-auth.ts';
 
 const original = { ...process.env };
 beforeEach(() => {
+  delete process.env.CANOPY_DELETE_USERNAMES;
   process.env.CANOPY_DELETE_USERNAME = 'test-admin';
   process.env.CANOPY_DELETE_PASSWORD = 'test-secret';
 });
 afterEach(() => {
-  for (const key of ['CANOPY_DELETE_USERNAME', 'CANOPY_DELETE_PASSWORD']) {
+  for (const key of ['CANOPY_DELETE_USERNAME', 'CANOPY_DELETE_USERNAMES', 'CANOPY_DELETE_PASSWORD']) {
     if (original[key] === undefined) delete process.env[key];
     else process.env[key] = original[key];
   }
@@ -46,4 +47,22 @@ test('rejects absent, malformed, incorrect, and oversized credentials', async ()
 
 test('accepts only the configured username and password together', async () => {
   assert.equal(await requireProjectDeleteCredentials(request({ username: 'test-admin', password: 'test-secret' })), null);
+});
+
+test('accepts every configured team member with the shared password', async () => {
+  process.env.CANOPY_DELETE_USERNAMES = 'test-admin, member-one,member-two, member-three, ';
+  for (const username of ['test-admin', 'member-one', 'member-two', 'member-three']) {
+    assert.equal(await requireProjectDeleteCredentials(request({ username, password: 'test-secret' })), null);
+    assert.equal((await requireProjectDeleteCredentials(request({ username, password: 'wrong' }))).status, 401);
+  }
+  for (const username of ['', 'outsider', 'member', 'member-one,member-two']) {
+    assert.equal((await requireProjectDeleteCredentials(request({ username, password: 'test-secret' }))).status, 401);
+  }
+});
+
+test('explicit team list replaces the legacy username and rejects empty configuration', async () => {
+  process.env.CANOPY_DELETE_USERNAMES = 'member-one';
+  assert.equal((await requireProjectDeleteCredentials(request({ username: 'test-admin', password: 'test-secret' }))).status, 401);
+  process.env.CANOPY_DELETE_USERNAMES = ' , , ';
+  assert.equal((await requireProjectDeleteCredentials(request({ username: '', password: 'test-secret' }))).status, 503);
 });
