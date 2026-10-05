@@ -6,14 +6,20 @@ import { todayISO, diffDays } from './dates';
 import { tigerClear, tigerDeleteItems, tigerHistory, tigerInsert } from './tiger';
 import type { ActionItem, AppState, CommitmentEvent, EventType, Extracted, Person, Project, Source, SourceKind } from './types';
 
-export const DATA_DIR = process.env.CANOPY_DATA_DIR || path.join(process.cwd(), '.data');
+// Vercel's disk is read-only except /tmp, so there the store is copied to /tmp on first write.
+// Changes then last only as long as that server instance does.
+const BUNDLED = path.join(process.env.CANOPY_DATA_DIR || path.join(process.cwd(), '.data'), 'store.json');
+export const DATA_DIR = process.env.CANOPY_DATA_DIR || (process.env.VERCEL ? '/tmp/canopy' : path.join(process.cwd(), '.data'));
 const FILE = path.join(DATA_DIR, 'store.json');
 const empty = (): AppState => ({ projects: [], people: [], sources: [], items: [], events: [] });
 
 let queue: Promise<unknown> = Promise.resolve();
 
 async function read(): Promise<AppState> {
-  try { return { ...empty(), ...JSON.parse(await fs.readFile(FILE, 'utf8')) }; } catch { return empty(); }
+  for (const f of [FILE, BUNDLED]) {
+    try { return { ...empty(), ...JSON.parse(await fs.readFile(f, 'utf8')) }; } catch { /* try the next one */ }
+  }
+  return empty();
 }
 
 // Serialises read-modify-write cycles so concurrent requests cannot clobber each other.
@@ -41,13 +47,14 @@ export async function getState(): Promise<AppState> {
   const s = await read();
   const logged = new Set(s.events.filter((e) => e.event_type === 'overdue').map((e) => e.action_item_id));
   if (!s.items.some((i) => isLate(i) && !logged.has(i.id))) return s;
+  // Logging overdue is bookkeeping: if the disk cannot be written, still show the grove.
   return mutate((st, log) => {
     const seen = new Set(st.events.filter((e) => e.event_type === 'overdue').map((e) => e.action_item_id));
     for (const i of st.items) {
       if (isLate(i) && !seen.has(i.id)) log({ action_item_id: i.id, project_id: i.project_id, event_type: 'overdue', old_value: i.deadline, new_value: today, time: new Date(`${i.deadline}T23:59:59`).toISOString() });
     }
     return st;
-  });
+  }).catch((err) => { console.error('[store] could not save overdue events', err); return s; });
 }
 
 // Tiger Data is the history of record, but it only holds events written since DATABASE_URL was set
