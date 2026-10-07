@@ -1,0 +1,11 @@
+Rosa: Thanks everyone. Decision: we are going with Vendor A across all regions.
+Diego: I'll get the Vendor A contract redlined by the 14th.
+Diego: I'll also countersign the data processing addendum by Tuesday.
+Priya: I'll finish the legal compliance review by next Monday.
+Sam: I'll load test the new API endpoints by the 20th.
+Sam: I'll provision engineering sandbox access by Thursday.
+Aiko: I'll run the SSO integration spike by October 16.
+Lena: I'll raise the purchase order by the 16th.
+Lena: I'll update the Q4 budget forecast by Friday.
+Mei: I'll draft the invoice schedule by Wednesday.
+Rosa: Someone needs to tell the current vendor we are not renewing.
